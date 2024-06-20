@@ -1,0 +1,14 @@
+# @package _global_
+
+ha_teacher:
+  chi: 0.25
+  epsilon: 0.6
+  teacher_enable: true
+
+  matlab_engine:
+    stdout: false
+    stderr: false
+    working_path: "src/ha_teacher/matlab/"
+    cvx_toolbox:
+      setup: true
+      relative_path: "./cvx"

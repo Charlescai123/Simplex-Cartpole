@@ -1,0 +1,10 @@
+# @package hp_student
+defaults:
+  - agents: ddpg.yaml
+  - networks: taylor.yaml
+  - _self_
+
+phydrl:
+  gamma: 0.5   # Contribution ration between data-driven and model-based action
+
+
