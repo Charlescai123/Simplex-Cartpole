@@ -20,7 +20,6 @@ cartpole:
   gravity: 9.8    # gravitational acceleration
   frequency: 30   # Runtime frequency
   with_friction: true
-  force_input: true
   kinematics_integrator: "euler"
   terminate_on_failure: true
 

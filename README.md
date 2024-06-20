@@ -189,7 +189,8 @@ For the first 10 episodes, the system would always fail and the agent couldn't c
 
 - #### SeCLM
 
-For testing, we disable the teacher module, and result shows that the agent learns the safe behavior from teacher:
+By SeCLM, the cartpole would always keep in a safe condition. To validate the training performance, we disable the
+teacher module during testing, and the result shows that the agent learns the safe behavior from teacher:
 <p align="center">
  <img src="./docs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/> <img src="./docs/traj_seclm_eval_10.gif" height="260" alt="traj_seclm_eval_10"/> 
 </p>
@@ -200,4 +201,4 @@ For testing, we disable the teacher module, and result shows that the agent lear
 
 - To plot cartpole `phase/trajectory` or live show its `animation/trajectory`, check corresponding fields
   in `config/logger/logger.yaml`
-
+- The repository uses the `logging` package for debugging. You can enable debug mode in `config/base_config.yaml`

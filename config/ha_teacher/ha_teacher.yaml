@@ -10,5 +10,5 @@ ha_teacher:
     stderr: false
     working_path: "src/ha_teacher/matlab/"
     cvx_toolbox:
-      setup: true
+      setup: false
       relative_path: "./cvx"
