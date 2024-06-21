@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# Train
 ID="Pretrain"
 MODE='train'
 CHECKPOINT=null

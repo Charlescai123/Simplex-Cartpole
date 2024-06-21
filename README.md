@@ -201,4 +201,6 @@ teacher module during testing, and the result shows that the agent learns the sa
 
 - To plot cartpole `phase/trajectory` or live show its `animation/trajectory`, check corresponding fields
   in `config/logger/logger.yaml`
+- Choose between training by `steps` or `episodes`, set field `training_by_steps` to `true` or `false`
+  in `config/base_config.yaml`
 - The repository uses the `logging` package for debugging. Set debug mode in `config/base_config.yaml`

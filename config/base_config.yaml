@@ -1,11 +1,12 @@
 general:
-  id: 'phydrl_simplex'
+  id: 'SeC-LearningMachine'
   mode: 'train'
-  use_gpu: true
   checkpoint: null
+  use_gpu: true
+  gpu_id: 0
 
   # Training
-  training_by_steps: true         # Terminate training by steps or episodes
+  training_by_steps: true         # Terminate training by maximum steps or episodes
   max_training_steps: 1e6         # (1e6 by default)
   max_training_episodes: 1e3      # (1e3 by default)
   max_steps_per_episode: 1500     # (1500 by default)

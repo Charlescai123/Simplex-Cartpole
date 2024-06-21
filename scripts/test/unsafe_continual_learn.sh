@@ -1,11 +1,13 @@
 #!/bin/bash
+
+# Test
 ID="Unsafe-Continual-Learn"
 MODE='test'
 CHECKPOINT="results/models/Unsafe-Continual-Learn"
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
 WITH_FRICTION=true
-FRICTION_CART=20
+FRICTION_CART=18
 
 PLOT_PHASE=true
 PLOT_TRAJECTORY=true

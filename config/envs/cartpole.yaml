@@ -11,7 +11,7 @@ cartpole:
   # Action constraint
   force_bound: [-30, 30]
 
-  # Cart-pole (Physical parameters)
+  # Cart-pole (Physical model parameters)
   mass_cart: 0.94
   mass_pole: 0.23
   length_pole: 0.64

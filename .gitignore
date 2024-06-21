@@ -1,7 +1,4 @@
 .idea/
 **/__pycache__/
-todo.txt
-plots/phase_save/
-plots/saved/
-models/
-logs/
+
+#results/

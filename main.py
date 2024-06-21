@@ -21,34 +21,6 @@ def test(cfg: DictConfig):
     runner.test()
 
 
-@hydra.main(version_base=None, config_path="config", config_name="base_config.yaml")
-def main(cfg: DictConfig):
-    # Log setting
-    logging_configure(cfg=cfg.general.logging)
-
-    # Use GPU or not
-    if not cfg.general.use_gpu:
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-    else:
-        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-        physical_devices = tf.config.list_physical_devices('GPU')
-        # try:
-        #     tf.config.experimental.set_memory_growth(physical_devices[0], True)
-        # except:
-        #     exit("GPU allocated failed")
-
-    # Train or Test
-    if cfg.general.mode == 'train':
-        train(cfg)
-    elif cfg.general.mode == 'test':
-        if cfg.general.checkpoint is None:
-            exit("Please load the pretrained checkpoint")
-        else:
-            test(cfg)
-    else:
-        raise RuntimeError('No such a mode, please check it')
-
-
 def logging_configure(cfg: DictConfig):
     # Remove all handlers associated with the root logger
     for handler in logging.root.handlers[:]:
@@ -76,6 +48,35 @@ def logging_configure(cfg: DictConfig):
     console_handler.setFormatter(formatter)
     console_handler.setLevel(log_mode)
     logger.addHandler(console_handler)
+
+
+@hydra.main(version_base=None, config_path="config", config_name="base_config.yaml")
+def main(cfg: DictConfig):
+    # Log setting
+    logging_configure(cfg=cfg.general.logging)
+
+    # Use GPU or not
+    if not cfg.general.use_gpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    else:
+        gpu_id = str(cfg.general.gpu_id)
+        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
+        physical_devices = tf.config.list_physical_devices('GPU')
+        # try:
+        #     tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        # except:
+        #     exit("GPU allocated failed")
+
+    # Train or Test
+    if cfg.general.mode == 'train':
+        train(cfg)
+    elif cfg.general.mode == 'test':
+        if cfg.general.checkpoint is None:
+            exit("Please load the pretrained checkpoint")
+        else:
+            test(cfg)
+    else:
+        raise RuntimeError('No such a mode, please check it')
 
 
 if __name__ == '__main__':

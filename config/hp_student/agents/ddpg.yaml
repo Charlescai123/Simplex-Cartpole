@@ -5,7 +5,6 @@ agents:
   # Actions
   action:
     add_noise: null    # None or OU noise
-#    mode: 'residual'
     noise_factor: 1
     noise_half_decay_time: 1e6
     bound: [ -1, 1 ]

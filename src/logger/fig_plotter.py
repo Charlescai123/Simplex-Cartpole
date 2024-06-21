@@ -62,9 +62,6 @@ class FigPlotter:
             raise RuntimeError("Failed to change the plotter existing directory")
 
     def phase_portrait(self, state_list, action_mode_list, x_set, theta_set, epsilon, p_mat, idx):
-        # plt.close()
-        # plt.clf()
-
         # Figure name
         fig_name = f"{self.phase_dir}/phase{idx}.png"
         print(f"Plotting Phase to: {fig_name}...")
@@ -83,8 +80,9 @@ class FigPlotter:
         plt.ylabel('$\\theta$ (rad)', fontsize=18)
         plt.legend(loc="lower left", markerscale=4, handlelength=1.2, handletextpad=0.5, bbox_to_anchor=(0.05, 0.05))
         plt.savefig(fig_name)
+
         print(f"Successfully plot phase: {fig_name}")
-        plt.clf()
+        plt.close()
 
     def plot_phase(self, state_list, action_mode_list, plot_mode=PlotMode.POSITION):
         assert len(state_list) == len(action_mode_list)
@@ -164,8 +162,8 @@ class FigPlotter:
 
         plt.tight_layout()  # Adjust spacing between subplots
         plt.savefig(fig_name, dpi=150)
+        plt.close(fig)
         print(f"Successfully plot trajectory: {fig_name}")
-        plt.clf()
 
     def live_plot_trajectory(self, axes, state, action, action_mode, safety_val, idx):
         if idx == 0:

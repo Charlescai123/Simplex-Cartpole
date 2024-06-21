@@ -1,11 +1,13 @@
 #!/bin/bash
+
+# Test
 ID="SeCLM-Safe-Learn"
 MODE='test'
 CHECKPOINT="results/models/SeCLM-Safe-Learn"
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
 WITH_FRICTION=true
-FRICTION_CART=20
+FRICTION_CART=18
 
 PLOT_PHASE=true
 PLOT_TRAJECTORY=true

@@ -140,7 +140,7 @@ class Cartpole(gym.Env):
         failed = False
         self.states = [ran_x, ran_v, ran_theta, ran_theta_v, failed]
 
-    def render(self, mode='human', states=None, is_normal_operation=True):
+    def render(self, mode='human', states=None):
         screen_width = 600
         screen_height = 400
         world_width = self.params.safety_set.x[1] * 2 + 1
@@ -155,71 +155,89 @@ class Cartpole(gym.Env):
 
         if self.viewer is None:
             self.viewer = rendering.Viewer(screen_width, screen_height)
+            # Target
             self.target_trans = rendering.Transform()
             # target = rendering.Image('./docs/target.svg', width=target_width, height=target_height)
-            target = rendering.make_circle(12)
-            target.set_color(.8, .8, .45)
-            target.add_attr(self.target_trans)
-            self.viewer.add_geom(target)
+            self.target = rendering.make_circle(12)
+            self.target.set_color(.8, .8, .45)
+            self.target.add_attr(self.target_trans)
+            self.viewer.add_geom(self.target)
+
+            # Cart
             l, r, t, b = -cart_width / 2, cart_width / 2, cart_height / 2, -cart_height / 2
-            axle_offset = cart_height / 4.0
-            cart = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
-            if not is_normal_operation:
-                cart.set_color(1.0, 0, 0)
+            self.cart = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
             self.cart_trans = rendering.Transform()
-            cart.add_attr(self.cart_trans)
-            self.viewer.add_geom(cart)
+            self.cart.add_attr(self.cart_trans)
+            self.viewer.add_geom(self.cart)
+
+            # Pole
+            axle_offset = cart_height / 4.0
             l, r, t, b = -pole_width / 2, pole_width / 2, pole_length - pole_width / 2, -pole_width / 2
-            pole = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
-            pole.set_color(.8, .6, .4)
+            self.pole = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
+            self.pole.set_color(.8, .6, .4)
             self.pole_trans = rendering.Transform(translation=(0, axle_offset))
-            pole.add_attr(self.pole_trans)
-            pole.add_attr(self.cart_trans)
-            self.viewer.add_geom(pole)
+            self.pole.add_attr(self.pole_trans)
+            self.pole.add_attr(self.cart_trans)
+            self.viewer.add_geom(self.pole)
+
+            # Axle
             self.axle = rendering.make_circle(pole_width / 2)
             self.axle.add_attr(self.pole_trans)
             self.axle.add_attr(self.cart_trans)
             self.axle.set_color(.5, .5, .8)
             self.viewer.add_geom(self.axle)
+
+            # Track line
             self.track = rendering.Line((0, cart_y), (screen_width, cart_y))
             self.track.set_color(0, 0, 0)
             self.viewer.add_geom(self.track)
-            self._pole_geom = pole
 
         if states is None:
             if self.states is None:
                 return None
             else:
-                x = self.states
+                s = self.states
         else:
-            x = states
+            s = states
+
+        # Change to red color to indicate system failure
+        if s is not None:
+            if self.is_trans_failed(s[0]):
+                self.cart.set_color(1.0, 0, 0)
+            if self.is_theta_failed(s[2]):
+                self.pole.set_color(1.0, 0, 0)
 
         # Edit the pole polygon vertex
-        pole = self._pole_geom
         l, r, t, b = -pole_width / 2, pole_width / 2, pole_length - pole_width / 2, -pole_width / 2
-        pole.v = [(l, b), (l, t), (r, t), (r, b)]
+        self.pole.v = [(l, b), (l, t), (r, t), (r, b)]
 
-        cart_x = x[0] * scale + screen_width / 2.0  # MIDDLE OF CART
+        cart_x = s[0] * scale + screen_width / 2.0  # MIDDLE OF CART
         target_x = 0 * scale + screen_width / 2.0
         target_y = pole_length + cart_y
 
         self.cart_trans.set_translation(cart_x, cart_y)
         self.target_trans.set_translation(target_x, target_y)
-        self.pole_trans.set_rotation(-x[2])
+        self.pole_trans.set_rotation(-s[2])
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
-    def is_failed(self, x, theta):
-        failed = bool(x <= self.params.safety_set.x[0]
-                      or x >= self.params.safety_set.x[1]
-                      or theta <= self.params.safety_set.theta[0]
-                      or theta >= self.params.safety_set.theta[1])
-        return failed
 
     def close(self):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
+
+    def is_trans_failed(self, x):
+        trans_failed = bool(x <= self.params.safety_set.x[0]
+                      or x >= self.params.safety_set.x[1])
+        return trans_failed
+
+    def is_theta_failed(self, theta):
+        theta_failed = bool(theta <= self.params.safety_set.theta[0]
+                      or theta >= self.params.safety_set.theta[1])
+        return theta_failed
+
+    def is_failed(self, x, theta):
+        return self.is_trans_failed(x) or self.is_theta_failed(theta)
 
     @staticmethod
     def get_tracking_error(p_matrix, states_real, states_reference):
@@ -236,44 +254,6 @@ class Cartpole(gym.Env):
         error = -eLya
 
         return error
-
-    def test_safety(self, states_current, action, states_next):
-        miu_1 = 4.0
-        miu_2 = 0.2
-        alfa = 0.85
-        beta_min = ((miu_1 - 1) * (1 - miu_2) / alfa) - miu_2
-
-        observations, _ = states2observations(states_current)
-
-        ##########
-        tem_state_a = np.array(states_current[0:4])
-        tem_state_b = np.expand_dims(tem_state_a, axis=0)
-        tem_state_c = np.matmul(tem_state_b, np.transpose(MATRIX_S))
-        tem_state_d = np.matmul(tem_state_c, MATRIX_P)
-        lyapunov_reward_current_aux = np.matmul(tem_state_d, np.transpose(tem_state_c))
-        #########
-
-        lyapunov_reward_next = self.get_lyapunov_reward(MATRIX_P, states_next)
-        # if lyapunov_reward_next > 1:
-        #     print("lyapunov_reward_next", lyapunov_reward_next)
-        gamma = 1.0
-        upper_lyapunov_reward_next = miu_1 * lyapunov_reward_current_aux
-        beta_lyapunov_reward_next = upper_lyapunov_reward_next - lyapunov_reward_next
-        cond21 = (1 - miu_1) * lyapunov_reward_current_aux + beta_lyapunov_reward_next * gamma
-        cond17 = upper_lyapunov_reward_next - lyapunov_reward_next
-        control = cond17 * gamma - beta_min
-        theta = (lyapunov_reward_current_aux / 1) + (control / (1 * (1 - miu_1)))
-
-        # print(f"---theta---  value: {theta} result:{theta >= alfa}")
-        # print(f"---cond21--- value: {cond21} result:{cond21 >= (alfa - 1)}")
-        print(f"---reward_next--- value: {lyapunov_reward_next} result:{lyapunov_reward_next <= 1}")
-        # print("")
-
-        test_result = {"theta_test": theta >= alfa,
-                       "cond21": cond21 >= (alfa - 1),
-                       "reward_next": lyapunov_reward_next <= 1}
-
-        return test_result
 
     def get_pP_and_vP(self):
         # P = MATRIX_P
@@ -446,7 +426,7 @@ if __name__ == "__main__":
     axle_offset = cart_height / 4.0
     cart = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
 
-    is_normal_operation = True
+    is_normal_operation = False
     if not is_normal_operation:
         cart.set_color(1.0, 0, 0)
     cart_trans = rendering.Transform()

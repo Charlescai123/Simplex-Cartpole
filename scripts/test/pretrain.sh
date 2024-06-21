@@ -1,18 +1,20 @@
 #!/bin/bash
+
+# Test
 ID="Pretrain"
 MODE='test'
-CHECKPOINT="results/models/Pretrain"    # Also try the best trained model (results/models/xxx-best)
+CHECKPOINT="results/models/Pretrain-best"    # Also try the best trained model (results/models/xxx-best)
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
-WITH_FRICTION=false
-FRICTION_CART=20
+WITH_FRICTION=true
+FRICTION_CART=18
 
 PLOT_PHASE=true
 PLOT_TRAJECTORY=true
 ANIMATION_SHOW=true
 LIVE_TRAJECTORY_SHOW=true
 EVAL_RANDOM_RESET=false
-ACTUATOR_NOISE=false
+ACTUATOR_NOISE=true
 SAMPLE_POINTS=150
 
 python main.py \

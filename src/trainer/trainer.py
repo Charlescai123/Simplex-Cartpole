@@ -170,6 +170,9 @@ class Trainer:
                   f"Critic_loss: {mean_critic_loss:.6}\n"
                   f"Total_steps_ep: {ep_steps} ")
 
+            # Save weights per episode
+            self.agent.save_weights(self.logger.model_dir)
+
             if (ep_i + 1) % self.hp_params.agents.evaluation_period == 0:
                 eval_mean_reward, eval_mean_distance_score, eval_failed = self.evaluation(mode='eval', idx=ep_i)
                 self.logger.change_mode(mode='train')  # Change mode back
@@ -183,16 +186,14 @@ class Trainer:
             episode += 1
             # print(f"global_steps is: {global_steps}")
 
-            # Whether to terminate training based on training_steps setting
+            # Whether to terminate training based on training_steps
             if global_steps > self.agent_params.max_training_steps and self.agent_params.training_by_steps:
-                self.agent.save_weights(self.logger.model_dir)
                 np.savetxt(f"{self.logger.log_dir}/failed_times.txt",
                            [self.failed_times, episode, self.failed_times / episode])
                 print(f"Final_optimize time: {optimize_time}")
                 print("Total failed:", self.failed_times)
                 exit("Reach maximum steps, exit...")
 
-        self.agent.save_weights(self.logger.model_dir)
         np.savetxt(f"{self.logger.log_dir}/failed_times.txt",
                    [self.failed_times, episode, self.failed_times / episode])
         print(f"Final_optimize time: {optimize_time}")
@@ -229,7 +230,7 @@ class Trainer:
 
             # Visualize Cart-pole animation
             if self.params.logger.live_plotter.animation.show:
-                frame = self.cartpole.render('rgb_array')
+                frame = self.cartpole.render(mode='rgb_array')
                 ani_frames.append(frame)
 
             # Visualize Live trajectory
@@ -278,6 +279,8 @@ class Trainer:
         if visual_flag:
             self.cartpole.close()
             self.logger.live_plotter.reset()
+            plt.ioff()
+            plt.close()
 
         # Plot Phase
         if self.params.logger.fig_plotter.phase.plot:
