@@ -177,7 +177,7 @@ The teacher in SeCLM will always provide safety guarantee for the student (agent
 
 ---
 
-To show the agent's learning performance with SeCLM, we select the same (unsafe) initial condition and continual train
+To show the agent's learning performance with SeCLM, we select the same (unsafe) initial condition and continually train
 for 10 episodes, either with or without SeCLM.
 
 - #### Unsafe Learn
