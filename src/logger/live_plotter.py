@@ -2,6 +2,7 @@ import time
 import numpy as np
 from PIL import Image
 from collections import deque
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.collections import LineCollection
@@ -9,6 +10,7 @@ from matplotlib.collections import LineCollection
 from src.logger.fig_plotter import FigPlotter
 from src.utils.utils import ActionMode
 
+matplotlib.use('TkAgg')     # Use TkAgg as the matplotlib backend
 
 class LivePlotter:
     def __init__(self, live_cfg):

@@ -204,3 +204,6 @@ teacher module during testing, and the result shows that the agent learns the sa
 - Choose between training by `steps` or `episodes`, set field `training_by_steps` to `true` or `false`
   in `config/base_config.yaml`
 - The repository uses the `logging` package for debugging. Set debug mode in `config/base_config.yaml`
+- In case you get issues during live plot, check the suitable
+  backend [libraries](https://matplotlib.org/stable/users/explain/figure/backends.html) to use for matplotlib and set
+  with `matplotlib.use(xxx)`
