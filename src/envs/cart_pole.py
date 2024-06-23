@@ -147,7 +147,8 @@ class Cartpole(gym.Env):
         scale = screen_width / world_width
         cart_y = 100  # TOP OF CART
         pole_width = 10.0
-        pole_length = scale * self.params.length_pole
+        # pole_length = scale * self.params.length_pole
+        pole_length = 137
         cart_width = 50.0
         cart_height = 30.0
         target_width = 45

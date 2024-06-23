@@ -35,8 +35,6 @@ class FigPlotter:
         self.last_live_safety_val = 0
 
         self.line_collections = []
-        # for i in range(6):
-        #     self.line_collections[i].set_segments([])
 
     def reset_live_variables(self):
         self.last_live_state = []
