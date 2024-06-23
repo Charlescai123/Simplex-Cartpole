@@ -2,13 +2,14 @@ function [F_hat, tmin] = patch_lmi(Ac, Bc, Ak, Bk)
 %%%%%%%%%%%%%%%%%%%%%%  DOC HELP  %%%%%%%%%%%%%%%%%%%%%%
 %% Inputs
 %
-%   Ac  : A(s) in continuous form  -- 4x4
-%   Bc  : B(s) in continuous form  -- 4x1
-%   Ak  : A(s) in discrete form    -- 4x4
-%   Bk  : B(s) in discrete form    -- 4x1
+%      Ac :  A(s) in continuous form      -- 4x4
+%      Bc :  B(s) in continuous form      -- 4x1
+%      Ak :  A(s) in discrete form        -- 4x4
+%      Bk :  B(s) in discrete form        -- 4x1
 %
 %% Outputs
-%   F   : Feedback control gain    -- 1x4
+%   F_hat :  Feedback control gain        -- 1x4
+%    tmin :  Feasibility of LMI solution  -- 1x4
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % SP = [11.7610, 6.1422, 14.7641, 3.1142;

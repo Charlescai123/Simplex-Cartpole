@@ -2,13 +2,13 @@ function [F_hat] = patch_cvx(Ac, Bc, Ak, Bk)
 %%%%%%%%%%%%%%%%%%%%%%  DOC HELP  %%%%%%%%%%%%%%%%%%%%%%
 %% Inputs
 %
-%   Ac  : A(s) in continuous form  -- 4x4
-%   Bc  : B(s) in continuous form  -- 4x1
-%   Ak  : A(s) in discrete form    -- 4x4
-%   Bk  : B(s) in discrete form    -- 4x1
+%      Ac :  A(s) in continuous form      -- 4x4
+%      Bc :  B(s) in continuous form      -- 4x1
+%      Ak :  A(s) in discrete form        -- 4x4
+%      Bk :  B(s) in discrete form        -- 4x1
 %
 %% Outputs
-%   F   : Feedback control gain    -- 1x4
+%   F_hat :  Feedback control gain        -- 1x4
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     
