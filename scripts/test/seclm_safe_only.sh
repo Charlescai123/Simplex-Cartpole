@@ -7,7 +7,7 @@ CHECKPOINT="results/models/SeCLM-Safe-Only"
 TEACHER_ENABLE=true
 TEACHER_LEARN=false
 WITH_FRICTION=true
-FRICTION_CART=18
+FRICTION_CART=20
 
 
 python main.py \

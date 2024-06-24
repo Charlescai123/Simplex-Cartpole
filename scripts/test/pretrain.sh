@@ -3,11 +3,11 @@
 # Test
 ID="Pretrain"
 MODE='test'
-CHECKPOINT="results/models/Pretrain-best"    # Also try the best trained model (results/models/xxx-best)
+CHECKPOINT="results/models/Pretrain"    # Also try the best trained model (results/models/xxx-best)
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
 WITH_FRICTION=false
-FRICTION_CART=18
+FRICTION_CART=20
 
 PLOT_PHASE=true
 PLOT_TRAJECTORY=true

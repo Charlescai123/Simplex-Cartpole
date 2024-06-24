@@ -2,6 +2,7 @@ import os
 import gym
 import math
 import copy
+import pyglet
 import numpy as np
 from numpy.linalg import inv
 from gym.utils import seeding
@@ -12,6 +13,14 @@ from gym.envs.classic_control import rendering
 
 from src.physical_design import MATRIX_P, MATRIX_S
 from src.utils.utils import safety_value, logger
+
+
+class DrawText:
+    def __init__(self, label: pyglet.text.Label):
+        self.label = label
+
+    def render(self):
+        self.label.draw()
 
 
 class Cartpole(gym.Env):
@@ -140,12 +149,12 @@ class Cartpole(gym.Env):
         failed = False
         self.states = [ran_x, ran_v, ran_theta, ran_theta_v, failed]
 
-    def render(self, mode='human', states=None):
+    def render(self, mode='human', states=None, idx=0):
         screen_width = 600
         screen_height = 400
         world_width = self.params.safety_set.x[1] * 2 + 1
         scale = screen_width / world_width
-        cart_y = 100  # TOP OF CART
+        cart_y = 120  # TOP OF CART
         pole_width = 10.0
         # pole_length = scale * self.params.length_pole
         pole_length = 137
@@ -193,6 +202,26 @@ class Cartpole(gym.Env):
             self.track.set_color(0, 0, 0)
             self.viewer.add_geom(self.track)
 
+            # Labels
+            cnt_text = f'Step: {idx}'
+            pos_text = f'x: {self.states[0]:.2f} m'
+            ang_text = f'x: {self.states[2]:.2f} rad'
+            self.cnt_label = pyglet.text.Label(cnt_text, font_size=26, font_name='Times New Roman',
+                                               x=300, y=340, anchor_x='center', anchor_y='center',
+                                               color=(0, 0, 0, 255))
+            self.pos_label = pyglet.text.Label(pos_text, font_size=20, font_name='Times New Roman',
+                                               x=170, y=40, anchor_x='center', anchor_y='bottom',
+                                               color=(0, 0, 0, 255))
+            self.ang_label = pyglet.text.Label(ang_text, font_size=20, font_name='Times New Roman',
+                                               x=430, y=40, anchor_x='center', anchor_y='bottom',
+                                               color=(0, 0, 0, 255))
+            self.cnt_label.draw()
+            self.pos_label.draw()
+            self.ang_label.draw()
+            self.viewer.add_geom(DrawText(self.cnt_label))
+            self.viewer.add_geom(DrawText(self.pos_label))
+            self.viewer.add_geom(DrawText(self.ang_label))
+
         if states is None:
             if self.states is None:
                 return None
@@ -216,9 +245,15 @@ class Cartpole(gym.Env):
         target_x = 0 * scale + screen_width / 2.0
         target_y = pole_length + cart_y
 
+        # Update cart-pole translation and rotation
         self.cart_trans.set_translation(cart_x, cart_y)
         self.target_trans.set_translation(target_x, target_y)
         self.pole_trans.set_rotation(-s[2])
+
+        # Update text on label
+        self.cnt_label.text = f'Step: {idx}'
+        self.pos_label.text = f"x: {self.states[0]:.2f} m"
+        self.ang_label.text = f"theta: {self.states[2]:.2f} rad"
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
 
@@ -229,12 +264,12 @@ class Cartpole(gym.Env):
 
     def is_trans_failed(self, x):
         trans_failed = bool(x <= self.params.safety_set.x[0]
-                      or x >= self.params.safety_set.x[1])
+                            or x >= self.params.safety_set.x[1])
         return trans_failed
 
     def is_theta_failed(self, theta):
         theta_failed = bool(theta <= self.params.safety_set.theta[0]
-                      or theta >= self.params.safety_set.theta[1])
+                            or theta >= self.params.safety_set.theta[1])
         return theta_failed
 
     def is_failed(self, x, theta):

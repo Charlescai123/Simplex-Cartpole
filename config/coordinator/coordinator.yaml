@@ -2,5 +2,5 @@
 
 coordinator:
   teacher_learn: true
-  max_dwell_steps: 0
+  max_dwell_steps: 10
 

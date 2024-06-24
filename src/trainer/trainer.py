@@ -230,7 +230,7 @@ class Trainer:
 
             # Visualize Cart-pole animation
             if self.params.logger.live_plotter.animation.show:
-                frame = self.cartpole.render(mode='rgb_array')
+                frame = self.cartpole.render(mode='rgb_array', idx=step)
                 ani_frames.append(frame)
 
             # Visualize Live trajectory
