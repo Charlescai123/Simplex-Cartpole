@@ -324,36 +324,3 @@ class FigPlotter:
 
 if __name__ == '__main__':
     pass
-    # plt.clf()
-    # plt.close()
-    # # Create a 3x2 subplot grid
-    # live_fig, axes = plt.subplots(3, 2, figsize=(10, 6), num='Live Trajectory')
-    # live_fig.suptitle(f'Inverted Pendulum Trajectory', fontsize=11, ha='center', y=0.97)
-    # state1 = np.asarray([0, 1, 2, 3])
-    # state2 = np.asarray([1, 2, 3, 4])
-    # action1 = 1
-    # action2 = 2
-    # action_mode = ActionMode.TEACHER
-    # safety_val1 = 0.5
-    # safety_val2 = 2
-    # i = 0
-    #
-    # # x
-    # axes[0, 0].plot([i, i + 1], [state1[0], state2[0]], 'r-', label='HAC')
-    #
-    # # x_dot
-    # axes[0, 1].plot([i, i + 1], [state1[1], state2[1]], 'r-', label='HAC')
-    #
-    # # theta
-    # axes[1, 0].plot([i, i + 1], [state1[2], state2[2]], 'r-', label='HAC')
-    #
-    # # theta_dot
-    # axes[1, 1].plot([i, i + 1], [state1[3], state2[3]], 'r-', label='HAC')
-    #
-    # # force/action
-    # axes[2, 0].plot([i, i + 1], [action1, action2], 'r-', label='HAC')
-    #
-    # # safety values
-    # axes[2, 1].plot([i, i + 1], [safety_val1, safety_val2], 'r-', label='HAC')
-    # plt.show()
-    # plt.pause(1023)
