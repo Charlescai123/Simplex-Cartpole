@@ -207,12 +207,6 @@ teacher module during testing, and the result shows that the agent learns the sa
   <br><b>Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
 </p>
 
-<p align="center">
- <img src="./docs/Phases/unsafe_continual_learn.png" height="250" alt="unsafe_continual_learn"/>
- <img src="./docs/Phases/unsafe_continual_learn.png" height="250" alt="unsafe_continual_learn"/>
- <img src="./docs/Phases/seclm_safe_learn.png" height="250" alt="seclm_safe_learn"/><br>
- <b>Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
-</p>
 ## Misc
 
 ---
