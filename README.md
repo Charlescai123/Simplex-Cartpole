@@ -195,11 +195,11 @@ teacher module during testing, and the result shows that the agent learns the sa
 
 <figure>
  <div style="text-align: center;">
-  <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="265" alt="ani_seclm_eval_10"/>
-  <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="265" alt="traj_seclm_eval_10"/>
+  <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/>
+  <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="260" alt="traj_seclm_eval_10"/>
  </div>
  <figcaption>
-  <p></p>
+  <div style="text-align: center;">Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</div>
  </figcaption>
 </figure>
 
