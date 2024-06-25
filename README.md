@@ -129,7 +129,9 @@ command:
 The cartpole system will safely converge to the set point using control action from Phy-DRL agent:
 
 <p align="center">
- <img src="./docs/GIFs/ani_pretrain.gif" height="260" alt="ani_pretrain"/> <img src="./docs/GIFs/traj_pretrain.gif" height="260" alt="traj_pretrain"/> 
+ <img src="./docs/GIFs/ani_pretrain.gif" height="260" alt="ani_pretrain"/> 
+ <img src="./docs/GIFs/traj_pretrain.gif" height="260" alt="traj_pretrain"/>
+ <br><b>Fig 1. A Well-trained Agent Provides Safety and Stability</b>
 </p>
 
 We now create a more real environment by introducing frictions and actuator noises: in `scripts/test/pretrain.sh`,
@@ -137,7 +139,9 @@ set `WITH_FRICTION` and `ACTUATOR_NOISE` to be `true`, run the script again. You
 'sim-to-real' gap, the system will fail within the same initial condition:
 
 <p align="center">
- <img src="./docs/GIFs/ani_pretrain_gap.gif" height="260" alt="ani_pretrain_gap"/> <img src="./docs/GIFs/traj_pretrain_gap.gif" height="260" alt="traj_pretrain_gap"/> 
+ <img src="./docs/GIFs/ani_pretrain_gap.gif" height="260" alt="ani_pretrain_gap"/> 
+ <img src="./docs/GIFs/traj_pretrain_gap.gif" height="260" alt="traj_pretrain_gap"/> 
+ <br><b>Fig 2. System Failure due to Large Sim-to-Real Gap</b>
 </p>
 
 ### Continual Learning
@@ -170,7 +174,9 @@ Use SeCLM for continual learning, the teacher guarantees safety and agent learns
 
 The teacher in SeCLM will always provide safety guarantee for the student (agent) during continual learning:
 <p align="center">
- <img src="./docs/GIFs/ani_seclm_train.gif" height="260" alt="ani_seclm_train"/> <img src="./docs/GIFs/traj_seclm_train.gif" height="260" alt="traj_seclm_train"/> 
+ <img src="./docs/GIFs/ani_seclm_train.gif" height="260" alt="ani_seclm_train"/> 
+ <img src="./docs/GIFs/traj_seclm_train.gif" height="260" alt="traj_seclm_train"/> 
+ <br><b>Fig 3. Teacher Guarantees Safety During Agent Learning (and Inference)</b>
 </p>
 
 ### Results
@@ -185,7 +191,9 @@ for 10 episodes, either with or without SeCLM.
 During the first 10 episodes, the system frequently failed, preventing the agent from gathering sufficient data to learn
 a safe policy.
 <p align="center">
- <img src="./docs/GIFs/ani_unsafe_learn.gif" height="260" alt="ani_unsafe_learn"/> <img src="./docs/GIFs/traj_unsafe_learn.gif" height="260" alt="traj_unsafe_learn"/> 
+ <img src="./docs/GIFs/ani_unsafe_learn.gif" height="260" alt="ani_unsafe_learn"/> 
+ <img src="./docs/GIFs/traj_unsafe_learn.gif" height="260" alt="traj_unsafe_learn"/> 
+ <br><b>Fig 4. Agent Random Exploration Causes System Failure</b>
 </p>
 
 - #### SeCLM
@@ -193,23 +201,17 @@ a safe policy.
 By SeCLM, the cartpole would always keep in a safe condition. To validate the training performance, we disable the
 teacher module during testing, and the result shows that the agent learns the safe behavior from teacher:
 
-<figure>
- <div style="text-align: center;">
+<p align="center">
   <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/>
   <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="260" alt="traj_seclm_eval_10"/>
- </div>
- <figcaption>
-  <div style="text-align: center;">Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</div>
- </figcaption>
-</figure>
+  <br><b>Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
+</p>
 
-asdasd
 <p align="center">
-<figure>
-<img src="./docs/Phases/unsafe_continual_learn.png" height="260" alt="unsafe_continual_learn"/>
-<figcaption>MDN Logo</figcaption>
-</figure>
-  <img src="./docs/Phases/seclm_safe_learn.png" height="260" alt="seclm_safe_learn"/>
+ <img src="./docs/Phases/unsafe_continual_learn.png" height="250" alt="unsafe_continual_learn"/>
+ <img src="./docs/Phases/unsafe_continual_learn.png" height="250" alt="unsafe_continual_learn"/>
+ <img src="./docs/Phases/seclm_safe_learn.png" height="250" alt="seclm_safe_learn"/><br>
+ <b>Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
 </p>
 ## Misc
 
