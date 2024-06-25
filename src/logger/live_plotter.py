@@ -10,7 +10,8 @@ from matplotlib.collections import LineCollection
 from src.logger.fig_plotter import FigPlotter
 from src.utils.utils import ActionMode
 
-matplotlib.use('TkAgg')     # Use TkAgg as the matplotlib backend
+matplotlib.use('TkAgg')  # Use TkAgg as the matplotlib backend
+
 
 class LivePlotter:
     def __init__(self, live_cfg):
@@ -175,59 +176,11 @@ class LivePlotter:
 
         self.update(state=state, action=action, action_mode=action_mode, safety_val=safety_val)
 
-    def live_plot_trajectory(self, x_set, theta_set, action_set):
-        if self.live_plot_flag is False:
-            self.live_plot_flag = True
-            plt.clf()
-            plt.close()
-            print(f"Setting up figure canvas for live plot")
-
-            x_l, x_h = x_set
-            th_l, th_h = theta_set
-            f_l, f_h = action_set
-            x_ticks = np.linspace(x_l, x_h, 5)
-            th_ticks = np.linspace(th_l, th_h, 5)
-            f_ticks = np.linspace(f_l, f_h, 5)
-
-            # Create a 3x2 subplot grid
-            self.live_fig, self.live_axes = plt.subplots(3, 2, figsize=(10, 6), num='Live Trajectory')
-            self.fig_plotter.legend_and_label(self.live_axes, x_ticks, th_ticks, f_ticks)
-            plt.tight_layout()  # Adjust spacing between subplots
-
-        i = self.live_plot_counter
-
-        import time
-        start = time.time()
-        self.fig_plotter.live_plot_trajectory(
-            axes=self.live_axes,
-            state=np.asarray(self.state_list[i]),
-            action=self.action_list[i],
-            action_mode=self.action_mode_list[i],
-            safety_val=self.safety_val_list[i],
-            idx=i
-        )
-
-        self.fig_plotter.live_plot_trajectory2(
-            axes=self.live_axes,
-            line_collections=self.line_collections,
-            state_list=np.asarray(self.state_list),
-            action_list=self.action_list,
-            action_mode_list=self.action_mode_list,
-            safety_val_list=self.safety_val_list,
-            idx=i
-        )
-
-        self.live_plot_counter += 1
-        end = time.time()
-        print(f"live plot time: {end - start}")
-
     @staticmethod
     def line_segment(axes, action_mode, i):
         y1 = np.random.rand()
         y2 = np.random.rand()
         lines = []
-        # if i >= 100:
-        #     plt.cla()
         if action_mode == ActionMode.STUDENT:
             # x
             line, = axes[0, 0].plot([i, i + 1], [y1, y2], '-', label='HPC', color=[0, 0.4470, 0.7410])

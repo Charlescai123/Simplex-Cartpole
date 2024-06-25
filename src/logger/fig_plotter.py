@@ -18,6 +18,7 @@ def legend_without_duplicate_labels(ax):
     handles, labels = ax.get_legend_handles_labels()
     unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
     ax.legend(*zip(*unique), fontsize="7.3", loc='best')
+    # ax.legend(*zip(*unique), fontsize="15", loc='best')
 
 
 class FigPlotter:
@@ -76,7 +77,8 @@ class FigPlotter:
         # plt.title(f"Inverted Pendulum Phase ($f = {freq} Hz$)", fontsize=14)
         plt.xlabel('x (m)', fontsize=18)
         plt.ylabel('$\\theta$ (rad)', fontsize=18)
-        plt.legend(loc="lower left", markerscale=4, handlelength=1.2, handletextpad=0.5, bbox_to_anchor=(0.05, 0.05))
+        plt.legend(loc="lower left", markerscale=4, handlelength=1.2, handletextpad=0.5, bbox_to_anchor=(0.05, 0.05),
+                   fontsize=10)
         plt.savefig(fig_name)
 
         print(f"Successfully plot phase: {fig_name}")
@@ -89,9 +91,9 @@ class FigPlotter:
         x, x_dot, theta, theta_dot = states[:, 0], states[:, 1], states[:, 2], states[:, 3]
 
         if plot_mode == PlotMode.POSITION:
-            trajectories = np.vstack((x, theta)).T
+            phases = np.vstack((x, theta)).T
         elif plot_mode == PlotMode.VELOCITY:
-            trajectories = np.vstack(([x_dot, theta_dot])).T
+            phases = np.vstack(([x_dot, theta_dot])).T
         else:
             raise NotImplementedError(f"Unrecognized plot mode: {plot_mode}")
         # eq points
@@ -99,21 +101,24 @@ class FigPlotter:
         #     print(f"eq point: {eq_point}")
         #     plt.plot(eq_point[0], eq_point[2], '*', color=[0.4660, 0.6740, 0.1880], markersize=8)
 
-        for i in range(len(trajectories) - 1):
+        for i in range(len(phases) - 1):
             if action_mode_list[i] == ActionMode.STUDENT:
-                plt.plot(trajectories[i][0], trajectories[i][1], '.', color=[0, 0.4470, 0.7410],
-                         markersize=2)  # student trajectory
+                plt.plot(phases[i][0], phases[i][1], '.', color=[0, 0.4470, 0.7410],
+                         markersize=2)  # student phases
             elif action_mode_list[i] == ActionMode.TEACHER:
-                plt.plot(trajectories[i][0], trajectories[i][1], 'r.', markersize=2)  # teacher trajectory
+                plt.plot(phases[i][0], phases[i][1], 'r.', markersize=2)  # teacher phases
             else:
                 raise RuntimeError(f"Unrecognized action mode: {action_modes[i]}")
 
         # Add label
-        h1, = plt.plot(trajectories[-1][0], trajectories[-1][1], '.', color=[0, 0.4470, 0.7410], label="HP Student",
-                       markersize=2)
-        h2, = plt.plot(trajectories[-1][0], trajectories[-1][1], 'r.', label="HA Teacher", markersize=2)
-        h3, = plt.plot(trajectories[0][0], trajectories[0][1], 'ko', markersize=6, mew=1.2)  # initial state
-        h4, = plt.plot(trajectories[-1][0], trajectories[-1][1], 'kx', markersize=8, mew=1.2)  # end state
+        h1, = plt.plot(phases[-1][0], phases[-1][1], 'kx', label="End State", markersize=1.5)
+        h2, = plt.plot(phases[-1][0], phases[-1][1], 'k.', label="Initial State", markersize=2)
+        h3, = plt.plot(phases[-1][0], phases[-1][1], '.', color=[0, 0.4470, 0.7410], label="HP Student", markersize=2)
+        h4, = plt.plot(phases[-1][0], phases[-1][1], 'r.', label="HA Teacher", markersize=2)
+
+        # Add marker for initial/end state
+        h5, = plt.plot(phases[0][0], phases[0][1], 'ko', markersize=6, mew=1.2)  # initial state
+        h6, = plt.plot(phases[-1][0], phases[-1][1], 'kx', markersize=8, mew=1.2)  # end state
 
     def plot_trajectory(self, state_list, action_list, action_mode_list, safety_val_list, x_set, theta_set, action_set,
                         freq, fig_idx):
@@ -127,10 +132,6 @@ class FigPlotter:
         x_ticks = np.linspace(x_l, x_h, 5)
         th_ticks = np.linspace(th_l, th_h, 5)
         f_ticks = np.linspace(f_l, f_h, 5)
-
-        # plt.close()
-        # plt.clf()
-        # print(f"current fig: {plt.gcf()}")
 
         n1 = len(state_list)
         n2 = len(action_list)
@@ -162,81 +163,6 @@ class FigPlotter:
         plt.savefig(fig_name, dpi=150)
         plt.close(fig)
         print(f"Successfully plot trajectory: {fig_name}")
-
-    def live_plot_trajectory(self, axes, state, action, action_mode, safety_val, idx):
-        if idx == 0:
-            pass
-        # if idx % 3 == 0:
-        #     plt.clf()
-        #     pass
-        else:
-            self.line_segment(axes=axes,
-                              state1=self.last_live_state,
-                              state2=state,
-                              action1=self.last_live_action,
-                              action2=action,
-                              safety_val1=self.last_live_safety_val,
-                              safety_val2=safety_val,
-                              action_mode=action_mode,
-                              i=idx - 1)
-            plt.draw()
-            # plt.show(block=False)
-            plt.pause(0.00001)
-
-        # Update the live variables
-        self.last_live_state = state
-        self.last_live_action = action
-        self.last_live_action_mode = action_mode
-        self.last_live_safety_val = safety_val
-
-    def live_plot_trajectory2(self, axes, line_collections, state_list, action_list, action_mode_list, safety_val_list,
-                              idx):
-        if idx == 0:
-            return
-        # print(f"action_list: {action_list}")
-        if len(state_list) > 30:
-            state_list = state_list[-30:]
-            action_list = action_list[-30:]
-            action_mode_list = action_mode_list[-30:]
-            safety_val_list = safety_val_list[-30:]
-
-        trajectories = np.asarray(state_list)
-        n = len(trajectories)
-        # n = len(trajectories) if len(trajectories) < 100 else 100
-        #
-        colors = []
-        segments = []
-        for i in range(n - 1):
-            if action_mode_list[i] == ActionMode.TEACHER:
-                colors.append(0)
-            else:
-                colors.append(1)
-            segment = np.column_stack([np.array([i, i + 1]), np.array([action_list[i], action_list[i + 1]])])
-            print(f"segment: {segment}")
-            segments.append(segment)
-        for i in range(6):
-            line_collections[i].set_segments(segments)
-            line_collections[i].set_array(colors)
-
-        # for i in range(n - 1):
-        #     self.line_segment(axes=axes,
-        #                       state1=trajectories[i],
-        #                       state2=trajectories[i + 1],
-        #                       action1=action_list[i],
-        #                       action2=action_list[i + 1],
-        #                       safety_val1=safety_val_list[i],
-        #                       safety_val2=safety_val_list[i + 1],
-        #                       action_mode=action_mode_list[i],
-        #                       i=i)
-        plt.draw()
-        # plt.show(block=False)
-        plt.pause(0.00001)
-
-        # Update the live variables
-        # self.last_live_state = state
-        # self.last_live_action = action
-        # self.last_live_action_mode = action_mode
-        # self.last_live_safety_val = safety_val
 
     @staticmethod
     def legend_and_label(axes, x_ticks, th_ticks, f_ticks):
@@ -338,6 +264,7 @@ class FigPlotter:
 
     @staticmethod
     def plot_envelope(p_mat, epsilon):
+        p_mat = p_mat * 0.6  # The rendered envelope in two dimensions will be larger
         cP = p_mat
 
         tP = np.zeros((2, 2))
@@ -383,7 +310,7 @@ class FigPlotter:
         tx_eps2 = np.array(tx_eps[1]).flatten()
 
         # Safety envelope
-        plt.plot(tx1, tx2, linewidth=2, color='black')
+        plt.plot(tx1, tx2, linewidth=2, color='grey')
         plt.plot(0, 0, 'k*', markersize=4, mew=0.6)  # global equilibrium (star)
         plt.plot(0, 0, 'ko-', markersize=7, mew=1, markerfacecolor='none')  # global equilibrium (circle)
 

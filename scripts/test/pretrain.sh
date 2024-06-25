@@ -4,9 +4,9 @@
 ID="Pretrain"
 MODE='test'
 CHECKPOINT="results/models/Pretrain"    # Also try the best trained model (results/models/xxx-best)
-TEACHER_ENABLE=false
+TEACHER_ENABLE=true
 TEACHER_LEARN=false
-WITH_FRICTION=false
+WITH_FRICTION=true
 FRICTION_CART=20
 
 PLOT_PHASE=true
@@ -14,8 +14,8 @@ PLOT_TRAJECTORY=true
 ANIMATION_SHOW=true
 LIVE_TRAJECTORY_SHOW=true
 EVAL_RANDOM_RESET=false
-ACTUATOR_NOISE=false
-SAMPLE_POINTS=150
+ACTUATOR_NOISE=true
+SAMPLE_POINTS=200
 
 python main.py \
   general.id=${ID} \

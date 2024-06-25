@@ -192,10 +192,25 @@ a safe policy.
 
 By SeCLM, the cartpole would always keep in a safe condition. To validate the training performance, we disable the
 teacher module during testing, and the result shows that the agent learns the safe behavior from teacher:
-<p align="center">
- <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/> <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="260" alt="traj_seclm_eval_10"/> 
-</p>
 
+<figure>
+ <div style="text-align: center;">
+  <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="265" alt="ani_seclm_eval_10"/>
+  <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="265" alt="traj_seclm_eval_10"/>
+ </div>
+ <figcaption>
+  <p></p>
+ </figcaption>
+</figure>
+
+asdasd
+<p align="center">
+<figure>
+<img src="./docs/Phases/unsafe_continual_learn.png" height="260" alt="unsafe_continual_learn"/>
+<figcaption>MDN Logo</figcaption>
+</figure>
+  <img src="./docs/Phases/seclm_safe_learn.png" height="260" alt="seclm_safe_learn"/>
+</p>
 ## Misc
 
 ---
