@@ -194,7 +194,7 @@ constraints*), and the ellipse represents the `Safety Envelope` (*soft constrain
 To show the agent's learning performance with SeCLM, we select the same (unsafe) initial condition and continually train
 for 10 episodes, either with or without SeCLM.
 
-- Unsafe Learn
+- #### Unsafe Learn
 
 During the first 10 episodes, the system frequently failed, preventing the agent from gathering sufficient data to learn
 a safe policy.
