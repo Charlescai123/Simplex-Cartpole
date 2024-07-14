@@ -158,7 +158,7 @@ Continual learning without safety guarantee:
 
 #### 2. SeCLM only for safety
 
-Use SeCLM for continual learning, the teacher only guarantees safety (Agent doesn't learn from teacher's behavior):
+Use SeCLM for continual learning, the teacher only guarantees safety (Agent doesn't learn from the teacher):
 
    ```bash
    bash scripts/train/seclm_safe_only.sh 
@@ -179,10 +179,11 @@ In SeCLM, the teacher will always provide safety guarantee for the student (agen
  <br><b>Fig 3. Teacher Guarantees Safety During Agent Learning (and Inference)</b>
 </p>
 
-Different system phase portrait during training:
+Below are the two different system phase portraits during training. The polygon represents the `Safety Set` (*hard
+constraints*), and the ellipse represents the `Safety Envelope` (*soft constraints*):
 <p align="center">
- <img src="./docs/phase_unsafe_learn.png" height="295" alt="phase_unsafe_learn"/>
- <img src="./docs/phase_seclm.png" height="295" alt="phase_seclm"/> 
+ <img src="./docs/phase_unsafe_learn.png" height="290" alt="phase_unsafe_learn"/>
+ <img src="./docs/phase_seclm.png" height="290" alt="phase_seclm"/> 
  <br><b>Fig 4. Phase Behavior of Unsafe Learn (left) and SeCLM (right)</b>
 </p>
 
