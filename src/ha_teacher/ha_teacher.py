@@ -27,7 +27,7 @@ class HATeacher:
         self.beta = teacher_cfg.beta
         self.kappa = teacher_cfg.kappa
         self.epsilon = teacher_cfg.epsilon
-        self.max_dwell_steps = teacher_cfg.max_dwell_steps
+        self.max_dwell_steps = teacher_cfg.tau
 
         self.teacher_enable = teacher_cfg.teacher_enable
         self.teacher_learn = teacher_cfg.teacher_learn
