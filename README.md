@@ -179,10 +179,10 @@ In SeCLM, the teacher will always provide safety guarantee for the student (agen
  <br><b>Fig 3. Teacher Guarantees Safety During Agent Learning (and Inference)</b>
 </p>
 
-Different phase behavior during training:
+Different system phase portrait during training:
 <p align="center">
- <img src="./docs/phase_unsafe_learn.png" height="260" alt="ani_seclm_train"/> 
- <img src="./docs/phase_seclm.png" height="260" alt="traj_seclm_train"/> 
+ <img src="./docs/phase_unsafe_learn.png" height="260" alt="phase_unsafe_learn"/>&nbsp;
+ <img src="./docs/phase_seclm.png" height="260" alt="phase_seclm"/> 
  <br><b>Fig 4. Phase Behavior of Unsafe Learn (left) and SeCLM (Right)</b>
 </p>
 
@@ -193,14 +193,14 @@ Different phase behavior during training:
 To show the agent's learning performance with SeCLM, we select the same (unsafe) initial condition and continually train
 for 10 episodes, either with or without SeCLM.
 
-- #### Unsafe Learn
+- Unsafe Learn
 
 During the first 10 episodes, the system frequently failed, preventing the agent from gathering sufficient data to learn
 a safe policy.
 <p align="center">
  <img src="./docs/GIFs/ani_unsafe_learn.gif" height="260" alt="ani_unsafe_learn"/> 
  <img src="./docs/GIFs/traj_unsafe_learn.gif" height="260" alt="traj_unsafe_learn"/> 
- <br><b>Fig 4. Agent Random Exploration Causes System Failure</b>
+ <br><b>Fig 5. Agent Random Exploration Causes System Failure</b>
 </p>
 
 - #### SeCLM
@@ -211,7 +211,7 @@ teacher module during testing, and the result shows that the agent has learned t
 <p align="center">
   <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/>
   <img src="./docs/GIFs/traj_seclm_eval_10.gif" height="260" alt="traj_seclm_eval_10"/>
-  <br><b>Fig 5. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
+  <br><b>Fig 6. Agent Inference after training 10 episodes by SeC-Learning Machine</b>
 </p>
 
 ## Misc
