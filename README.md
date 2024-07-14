@@ -181,8 +181,8 @@ In SeCLM, the teacher will always provide safety guarantee for the student (agen
 
 Different system phase portrait during training:
 <p align="center">
- <img src="./docs/phase_unsafe_learn.png" height="260" alt="phase_unsafe_learn"/>&nbsp;
- <img src="./docs/phase_seclm.png" height="260" alt="phase_seclm"/> 
+ <img src="./docs/phase_unsafe_learn.png" height="290" alt="phase_unsafe_learn"/>
+ <img src="./docs/phase_seclm.png" height="290" alt="phase_seclm"/> 
  <br><b>Fig 4. Phase Behavior of Unsafe Learn (left) and SeCLM (right)</b>
 </p>
 
