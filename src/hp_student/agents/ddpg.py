@@ -43,6 +43,13 @@ class DDPGAgent:
         else:
             raise NotImplementedError(f"{self.params.action.add_noise} noise is not implemented")
 
+        # Cached variables for fast indexing
+        self._soft_alpha = self.params.soft_alpha
+        self._gamma_discount = self.params.gamma_discount
+        self._buffer_batch_size = self.params.replay_buffer.batch_size
+        self._action_noise_factor = self.params.action.noise_factor
+        self._noise_half_decay_time = self.params.action.noise_half_decay_time
+
     def save_weights(self, model_save_path):
 
         self.actor.save_weights(os.path.join(model_save_path, "actor"))
@@ -85,7 +92,7 @@ class DDPGAgent:
         self.critic_target.set_weights(self.critic.get_weights())
 
     def soft_update(self):
-        soft_alpha = tf.convert_to_tensor(self.params.soft_alpha, dtype=tf.float32)
+        soft_alpha = tf.convert_to_tensor(self._soft_alpha, dtype=tf.float32)
         self._soft_update(soft_alpha)
 
     @tf.function
@@ -113,7 +120,7 @@ class DDPGAgent:
         if self.add_action_noise is False:
             action_noise = 0
         else:
-            action_noise = self.action_noise.sample() * self.params.action.noise_factor
+            action_noise = self.action_noise.sample() * self._action_noise_factor
             action_noise = np.squeeze(action_noise)
 
         observations_tensor = tf.expand_dims(observations, 0)
@@ -133,8 +140,8 @@ class DDPGAgent:
         return tf.squeeze(action_exploitation).numpy()
 
     def noise_factor_decay(self):
-        decay_rate = 0.693 / self.params.action.noise_half_decay_time
-        self.params.action.noise_factor *= math.exp(-decay_rate * self.exploration_steps)
+        decay_rate = 0.693 / self._noise_half_decay_time
+        self._action_noise_factor *= math.exp(-decay_rate * self.exploration_steps)
 
     def optimize(self, mini_batch):
         if self.optimizer_critic is None:
@@ -162,14 +169,14 @@ class DDPGAgent:
 
             if self.params.add_target_action_noise:
                 action_noise = tf.clip_by_value(
-                    tf.random.normal(shape=(self.params.replay_buffer.batch_size, 1), mean=0, stddev=0.3),
+                    tf.random.normal(shape=(self._buffer_batch_size, 1), mean=0, stddev=0.3),
                     clip_value_min=-0.5, clip_value_max=0.5)
                 a2 = tf.clip_by_value((a2 + action_noise), clip_value_min=-1, clip_value_max=1)
 
             critic_target_input = tf.concat([ob2, a2], axis=-1)
             q_e = self.critic_target(critic_target_input)
 
-            y_exp = r1 + self.params.gamma_discount * q_e * (1 - cra)
+            y_exp = r1 + self._gamma_discount * q_e * (1 - cra)
             critic_input = tf.concat([ob1, a1], axis=-1)
             y_pre = self.critic(critic_input)
 

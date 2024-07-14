@@ -38,11 +38,11 @@ class Cartpole(gym.Env):
 
         self.seed()
         self.viewer = None
-        self.states = None
+        self.state = None
         self.steps_beyond_terminal = None
 
-        self.states_dim = 4  # x, x_dot, theta, theta_dot
-        self.states_observations_dim = 5  # x, x_dot, s_theta, c_theta, theta_dot
+        self.state_dim = 4  # x, x_dot, theta, theta_dot
+        self.state_observations_dim = 5  # x, x_dot, s_theta, c_theta, theta_dot
         self.action_dim = 1  # force input or voltage
         self.reward_list = []
         self.ut = 0
@@ -53,9 +53,9 @@ class Cartpole(gym.Env):
     def step(self, action: float, action_mode=None):
         """
         param: action: the actual action injected to the plant
-        return: a list of states
+        return: a list of state
         """
-        x, x_dot, theta, theta_dot, _ = self.states
+        x, x_dot, theta, theta_dot, _ = self.state
 
         f_min, f_max = self.params.force_bound
         force = np.clip(action, a_min=f_min, a_max=f_max)
@@ -107,17 +107,17 @@ class Cartpole(gym.Env):
             failed = self.is_failed(x, theta)
 
         theta_rescale = math.atan2(math.sin(theta), math.cos(theta))  # wrap to [-pi, pi]
-        new_states = [x, x_dot, theta_rescale, theta_dot, failed]
+        new_state = [x, x_dot, theta_rescale, theta_dot, failed]
 
-        self.states = new_states  # to update animation
-        return self.states
+        self.state = new_state  # to update animation
+        return self.state
 
-    def reset(self, reset_states=None):
+    def reset(self, reset_state=None):
         print(f"<====== Env Reset: Reset at predefined condition =====>")
-        if reset_states is not None:
-            self.states = reset_states
+        if reset_state is not None:
+            self.state = reset_state
         else:
-            self.states = self.params.initial_condition
+            self.state = self.params.initial_condition
 
     def random_reset(self, threshold, mode='train'):
         print("<====== Env Reset: Random ======>")
@@ -136,10 +136,10 @@ class Cartpole(gym.Env):
             # state_vec = np.array([ran_x, ran_theta])
 
             safety_val = safety_value(
-                states=np.array([ran_x, ran_v, ran_theta, ran_theta_v]), p_mat=MATRIX_P
+                state=np.array([ran_x, ran_v, ran_theta, ran_theta_v]), p_mat=MATRIX_P
             )
 
-            # safety_val = self.safety_value(states=state_vec, p_mat=self.pP)
+            # safety_val = self.safety_value(state=state_vec, p_mat=self.pP)
             if safety_val < threshold:
                 flag = False
 
@@ -147,9 +147,9 @@ class Cartpole(gym.Env):
             #     flag = True
 
         failed = False
-        self.states = [ran_x, ran_v, ran_theta, ran_theta_v, failed]
+        self.state = [ran_x, ran_v, ran_theta, ran_theta_v, failed]
 
-    def render(self, mode='human', states=None, idx=0):
+    def render(self, mode='human', state=None, idx=0):
         screen_width = 600
         screen_height = 400
         world_width = self.params.safety_set.x[1] * 2 + 1
@@ -204,8 +204,8 @@ class Cartpole(gym.Env):
 
             # Labels
             cnt_text = f'Step: {idx}'
-            pos_text = f'x: {self.states[0]:.2f} m'
-            ang_text = f'x: {self.states[2]:.2f} rad'
+            pos_text = f'x: {self.state[0]:.2f} m'
+            ang_text = f'x: {self.state[2]:.2f} rad'
             self.cnt_label = pyglet.text.Label(cnt_text, font_size=26, font_name='Times New Roman',
                                                x=300, y=340, anchor_x='center', anchor_y='center',
                                                color=(0, 0, 0, 255))
@@ -222,13 +222,13 @@ class Cartpole(gym.Env):
             self.viewer.add_geom(DrawText(self.pos_label))
             self.viewer.add_geom(DrawText(self.ang_label))
 
-        if states is None:
-            if self.states is None:
+        if state is None:
+            if self.state is None:
                 return None
             else:
-                s = self.states
+                s = self.state
         else:
-            s = states
+            s = state
 
         # Change to red color to indicate system failure
         if s is not None:
@@ -252,8 +252,8 @@ class Cartpole(gym.Env):
 
         # Update text on label
         self.cnt_label.text = f'Step: {idx}'
-        self.pos_label.text = f"x: {self.states[0]:.2f} m"
-        self.ang_label.text = f"theta: {self.states[2]:.2f} rad"
+        self.pos_label.text = f"x: {self.state[0]:.2f} m"
+        self.ang_label.text = f"theta: {self.state[2]:.2f} rad"
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
 
@@ -276,11 +276,11 @@ class Cartpole(gym.Env):
         return self.is_trans_failed(x) or self.is_theta_failed(theta)
 
     @staticmethod
-    def get_tracking_error(p_matrix, states_real, states_reference):
+    def get_tracking_error(p_matrix, state_real, state_reference):
 
-        state = np.array(states_real[0:4])
+        state = np.array(state_real[0:4])
         state = np.expand_dims(state, axis=0)
-        state_ref = np.array(states_reference[0:4])
+        state_ref = np.array(state_reference[0:4])
         state_ref = np.expand_dims(state_ref, axis=0)
 
         state_error = state - state_ref
@@ -310,25 +310,25 @@ class Cartpole(gym.Env):
 
         return pP, vP
 
-    def reward_fcn(self, curr_states, action, states_next):
+    def reward_fcn(self, curr_state, action, state_next):
 
-        observations, _ = states2observations(curr_states)
+        observations, _ = state2observations(curr_state)
         set_point = self.params.set_point
 
         distance_score = self.get_distance_score(observations=observations, set_point=set_point)
         distance_reward = distance_score * self.params.reward.high_performance_reward_factor
 
-        lyapunov_reward_current = self.get_lyapunov_reward(MATRIX_P, curr_states)
+        lyapunov_reward_current = self.get_lyapunov_reward(MATRIX_P, curr_state)
 
         ##########
-        tem_state_a = np.array(curr_states[:4])
+        tem_state_a = np.array(curr_state[:4])
         tem_state_b = np.expand_dims(tem_state_a, axis=0)
         tem_state_c = np.matmul(tem_state_b, np.transpose(MATRIX_S))
         tem_state_d = np.matmul(tem_state_c, MATRIX_P)
         lyapunov_reward_current_aux = np.matmul(tem_state_d, np.transpose(tem_state_c))
         ##########
 
-        lyapunov_reward_next = self.get_lyapunov_reward(MATRIX_P, states_next)
+        lyapunov_reward_next = self.get_lyapunov_reward(MATRIX_P, state_next)
 
         if self.params.reward.lyapunov_form == 'UCB':  # Use lyapunov form of UC Berkeley
             lyapunov_reward = lyapunov_reward_current - lyapunov_reward_next
@@ -369,24 +369,24 @@ class Cartpole(gym.Env):
         return distance_score
 
     @staticmethod
-    def get_lyapunov_reward(p_matrix, states_real):
-        state = np.array(states_real[0:4])
+    def get_lyapunov_reward(p_matrix, state_real):
+        state = np.array(state_real[0:4])
         state = np.expand_dims(state, axis=0)
         Lya1 = np.matmul(state, p_matrix)
         Lya = np.matmul(Lya1, np.transpose(state))
         return Lya
 
 
-def states2observations(states):
-    x, x_dot, theta, theta_dot, failed = states
+def state2observations(state):
+    x, x_dot, theta, theta_dot, failed = state
     observations = [x, x_dot, math.sin(theta), math.cos(theta), theta_dot]
     return observations, failed
 
 
-def observations2states(observations, failed):
+def observations2state(observations, failed):
     x, x_dot, s_theta, c_theta, theta_dot = observations[:5]
-    states = [x, x_dot, np.arctan2(s_theta, c_theta), theta_dot, failed]
-    return states
+    state = [x, x_dot, np.arctan2(s_theta, c_theta), theta_dot, failed]
+    return state
 
 
 def get_init_condition(n_points_per_dim=20):
@@ -491,8 +491,8 @@ if __name__ == "__main__":
     viewer.add_geom(track)
     _pole_geom = pole
 
-    states = [-0., 0.6, 0.0, 0]
-    x = states
+    state = [-0., 0.6, 0.0, 0]
+    x = state
 
     # Edit the pole polygon vertex
     pole = _pole_geom

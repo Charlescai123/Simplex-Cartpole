@@ -31,5 +31,5 @@ python main.py \
   cartpole.friction_cart=${FRICTION_CART} \
   cartpole.random_reset.eval=${EVAL_RANDOM_RESET} \
   ha_teacher.teacher_enable=${TEACHER_ENABLE} \
-  coordinator.teacher_learn=${TEACHER_LEARN}
+  ha_teacher.teacher_learn=${TEACHER_LEARN}
 

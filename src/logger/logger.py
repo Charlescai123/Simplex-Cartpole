@@ -74,8 +74,8 @@ class Logger:
         self.action_mode_list.clear()
         self.safety_val_list.clear()
 
-    def update_logs(self, states, action, action_mode, safety_val):
-        self.state_list.append(states)
+    def update_logs(self, state, action, action_mode, safety_val):
+        self.state_list.append(state)
         self.action_list.append(action)
         self.action_mode_list.append(action_mode)
         self.safety_val_list.append(safety_val)

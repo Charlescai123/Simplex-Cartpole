@@ -2,7 +2,13 @@
 
 ha_teacher:
   chi: 0.25
+  eta: 1.2
+  beta: 0.9
+  kappa: 0.02
   epsilon: 0.6
+  max_dwell_steps: 10
+
+  teacher_learn: true
   teacher_enable: true
 
   matlab_engine:

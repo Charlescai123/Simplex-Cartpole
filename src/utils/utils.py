@@ -56,11 +56,11 @@ class TruncatePathFormatter(logging.Formatter):
             return super().format(record)
 
 
-def safety_value(states: np.ndarray, p_mat: np.ndarray) -> int:
+def safety_value(state: np.ndarray, p_mat: np.ndarray) -> int:
     """
     Get safety value represented by s^T @ P @ s
     """
-    return states.transpose() @ p_mat @ states
+    return state.transpose() @ p_mat @ state
 
 
 def get_discrete_Ad_Bd(Ac: np.ndarray, Bc: np.ndarray, T: int):

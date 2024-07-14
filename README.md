@@ -172,11 +172,18 @@ Use SeCLM for continual learning, the teacher guarantees safety and agent learns
    bash scripts/train/seclm_safe_learn.sh 
   ```
 
-The teacher in SeCLM will always provide safety guarantee for the student (agent) during continual learning:
+In SeCLM, the teacher will always provide safety guarantee for the student (agent) during continual learning:
 <p align="center">
  <img src="./docs/GIFs/ani_seclm_train.gif" height="260" alt="ani_seclm_train"/> 
  <img src="./docs/GIFs/traj_seclm_train.gif" height="260" alt="traj_seclm_train"/> 
  <br><b>Fig 3. Teacher Guarantees Safety During Agent Learning (and Inference)</b>
+</p>
+
+Different phase behavior during training:
+<p align="center">
+ <img src="./docs/phase_unsafe_learn.png" height="260" alt="ani_seclm_train"/> 
+ <img src="./docs/phase_seclm.png" height="260" alt="traj_seclm_train"/> 
+ <br><b>Fig 4. Phase Behavior of Unsafe Learn (left) and SeCLM (Right)</b>
 </p>
 
 ### Results
@@ -199,7 +206,7 @@ a safe policy.
 - #### SeCLM
 
 By SeCLM, the cartpole would always keep in a safe condition. To validate the training performance, we disable the
-teacher module during testing, and the result shows that the agent learns the safe behavior from teacher:
+teacher module during testing, and the result shows that the agent has learned the safe behavior from teacher:
 
 <p align="center">
   <img src="./docs/GIFs/ani_seclm_eval_10.gif" height="260" alt="ani_seclm_eval_10"/>

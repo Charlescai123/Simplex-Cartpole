@@ -6,7 +6,7 @@ MODE='test'
 CHECKPOINT="results/models/Pretrain"    # Also try the best trained model (results/models/xxx-best)
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
-WITH_FRICTION=false
+WITH_FRICTION=true
 FRICTION_CART=20
 
 PLOT_PHASE=true
@@ -31,4 +31,4 @@ python main.py \
   cartpole.friction_cart=${FRICTION_CART} \
   cartpole.random_noise.actuator.apply=${ACTUATOR_NOISE} \
   ha_teacher.teacher_enable=${TEACHER_ENABLE} \
-  coordinator.teacher_learn=${TEACHER_LEARN}
+  ha_teacher.teacher_learn=${TEACHER_LEARN}

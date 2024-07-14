@@ -17,4 +17,4 @@ python main.py \
   cartpole.with_friction=${WITH_FRICTION} \
   cartpole.friction_cart=${FRICTION_CART} \
   ha_teacher.teacher_enable=${TEACHER_ENABLE} \
-  coordinator.teacher_learn=${TEACHER_LEARN}
+  ha_teacher.teacher_learn=${TEACHER_LEARN}

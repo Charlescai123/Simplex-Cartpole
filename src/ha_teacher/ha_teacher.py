@@ -18,37 +18,53 @@ np.set_printoptions(suppress=True)
 class HATeacher:
     def __init__(self, teacher_cfg, cartpole_cfg):
 
-        self.teacher_params = teacher_cfg
-        self.cartpole_params = cartpole_cfg
-
         # Matlab Engine
         self.mat_engine = MatEngine(cfg=teacher_cfg.matlab_engine)
 
-        # Configuration
+        # Teacher Configuration
         self.chi = teacher_cfg.chi
+        self.eta = teacher_cfg.eta
+        self.beta = teacher_cfg.beta
+        self.kappa = teacher_cfg.kappa
         self.epsilon = teacher_cfg.epsilon
+        self.max_dwell_steps = teacher_cfg.max_dwell_steps
+
         self.teacher_enable = teacher_cfg.teacher_enable
+        self.teacher_learn = teacher_cfg.teacher_learn
+
+        # Cart-Pole Configuration
+        self.mc = cartpole_cfg.mass_cart
+        self.mp = cartpole_cfg.mass_pole
+        self.g = cartpole_cfg.gravity
+        self.l = cartpole_cfg.length_pole / 2
+        self.freq = cartpole_cfg.frequency
 
         # Real-time status
         self._plant_state = None
         self._patch_center = np.array([0, 0, 0, 0])
         self._center_update = True  # Patch center update flag
         self._patch_gain = F  # F_hat
+        self._dwell_step = 0  # Dwell step
 
-    def update(self, states: np.ndarray):
+    def update(self, state: np.ndarray):
         """
         Update real-time plant state and corresponding patch center if state is unsafe
         """
 
-        self._plant_state = states
-        safety_val = safety_value(states=states, p_mat=MATRIX_P)
+        self._plant_state = state
+        safety_val = safety_value(state=state, p_mat=MATRIX_P)
 
         # Restore patch flag
         if safety_val < self.epsilon:
             self._center_update = True
 
-        # States unsafe (outside safety envelope)
+        # state unsafe (outside safety envelope)
         else:
+            # Reset dwell steps
+            if self._dwell_step > 0:
+                logger.debug(f"Reset dwell_steps: {self._dwell_step}")
+                self._dwell_step = 0
+
             # Update patch center with current plant state
             if self._center_update is True:
                 self._patch_center = self._plant_state * self.chi
@@ -61,13 +77,14 @@ class HATeacher:
 
         # If teacher deactivated
         if self.teacher_enable is False:
-            return None
+            return None, False
 
         As, Bs = self.get_As_Bs_by_state(state=self._plant_state)
-        Ak, Bk = get_discrete_Ad_Bd(Ac=As, Bc=Bs, T=1 / self.cartpole_params.frequency)
+        Ak, Bk = get_discrete_Ad_Bd(Ac=As, Bc=Bs, T=1 / self.freq)
 
         # Call Matlab Engine for patch gain (F_hat)
-        F_hat, t_min = self.mat_engine.system_patch(As=As, Bs=Bs, Ak=Ak, Bk=Bk)
+        F_hat, t_min = self.mat_engine.system_patch(As=As, Bs=Bs, Ak=Ak, Bk=Bk,
+                                                    eta=self.eta, beta=self.beta, kappa=self.kappa)
 
         if t_min > 0:
             print(f"LMI has no solution, use last updated patch")
@@ -94,7 +111,13 @@ class HATeacher:
         logger.debug(f"self._patch_center: {self._patch_center}")
         logger.debug(f"Generated teacher action: {teacher_action}")
 
-        return teacher_action
+        safety_val = safety_value(state=self._plant_state, p_mat=MATRIX_P)
+        if safety_val < self.epsilon and self._dwell_step < self.max_dwell_steps:
+            self._dwell_step += 1
+            logger.debug(f"HA-Teacher runs for dwell time: {self._dwell_step}/{self.max_dwell_steps}")
+            return teacher_action, True
+        else:
+            return teacher_action, False
 
     def get_As_Bs_by_state(self, state: np.ndarray):
         """
@@ -109,10 +132,10 @@ class HATeacher:
         As[0][1] = 1
         As[2][3] = 1
 
-        mc = self.cartpole_params.mass_cart
-        mp = self.cartpole_params.mass_pole
-        g = self.cartpole_params.gravity
-        l = self.cartpole_params.length_pole / 2
+        mc = self.mc
+        mp = self.mp
+        g = self.g
+        l = self.l
 
         term = 4 / 3 * (mc + mp) - mp * np.cos(theta) * np.cos(theta)
 
@@ -138,3 +161,7 @@ class HATeacher:
     @property
     def patch_gain(self):
         return self._patch_gain
+
+    @property
+    def dwell_step(self):
+        return self._dwell_step

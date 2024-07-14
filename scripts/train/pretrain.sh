@@ -18,4 +18,4 @@ python main.py \
   cartpole.random_reset.train=${TRAIN_RANDOM_RESET} \
   cartpole.random_reset.eval=${EVAL_RANDOM_RESET} \
   ha_teacher.teacher_enable=${TEACHER_ENABLE} \
-  coordinator.teacher_learn=${TEACHER_LEARN}
+  ha_teacher.teacher_learn=${TEACHER_LEARN}

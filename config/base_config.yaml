@@ -17,13 +17,12 @@ general:
 
   # Logging
   logging:
-    mode: null    # null or other (DEBUG/INFO/WARNING...)
+    mode: null   # null or other (DEBUG/INFO/WARNING...)
     folder: 'results/logs/debug'
 
 
 defaults:
   - envs: cartpole.yaml
-  - coordinator: coordinator.yaml
   - ha_teacher: ha_teacher.yaml
   - hp_student: phydrl.yaml
   - logger: logger.yaml

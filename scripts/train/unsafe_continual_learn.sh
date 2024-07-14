@@ -3,16 +3,16 @@
 # Train
 ID="Unsafe-Continual-Learn"
 MODE='train'
-CHECKPOINT="results/models/Pretrain"
+CHECKPOINT="results/models/Pretrain-best"
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
 WITH_FRICTION=true
 FRICTION_CART=20
 ACTUATOR_NOISE=true
-TRAIN_RANDOM_RESET=true
-EVAL_RANDOM_RESET=true
-#TRAIN_RANDOM_RESET=false
-#EVAL_RANDOM_RESET=false
+#TRAIN_RANDOM_RESET=true
+#EVAL_RANDOM_RESET=true
+TRAIN_RANDOM_RESET=false
+EVAL_RANDOM_RESET=false
 
 TRAINING_BY_STEPS=true
 MAX_TRAINING_EPISODES=1e3
@@ -31,4 +31,4 @@ python main.py \
   cartpole.random_reset.eval=${EVAL_RANDOM_RESET} \
   cartpole.random_noise.actuator.apply=${ACTUATOR_NOISE} \
   ha_teacher.teacher_enable=${TEACHER_ENABLE} \
-  coordinator.teacher_learn=${TEACHER_LEARN}
+  ha_teacher.teacher_learn=${TEACHER_LEARN}

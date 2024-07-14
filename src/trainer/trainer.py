@@ -14,7 +14,7 @@ from src.hp_student.agents.ddpg import DDPGAgent
 from src.hp_student.agents.replay_mem import ReplayMemory
 from src.coordinator.coordinator import Coordinator
 from src.utils.utils import ActionMode, safety_value, logger
-from src.envs.cart_pole import observations2states, states2observations
+from src.envs.cart_pole import observations2state, state2observations
 from src.envs.cart_pole import Cartpole, get_init_condition
 from src.logger.logger import Logger, plot_trajectory
 
@@ -24,7 +24,7 @@ np.set_printoptions(suppress=True)
 class Trainer:
     def __init__(self, config):
         self.params = config
-        self.gamma = config.hp_student.phydrl.gamma  # Contribution ratio of Data-driven/Model-based action
+        self.gamma = config.hp_student.phydrl.gamma  # Contribution ratio of Data/Model action
 
         # Environment (Real Plant)
         self.cartpole = Cartpole(config.cartpole)
@@ -32,7 +32,7 @@ class Trainer:
         # HP Student
         self.hp_params = config.hp_student
         self.agent_params = config.hp_student.agents
-        self.shape_observations = self.cartpole.states_observations_dim
+        self.shape_observations = self.cartpole.state_observations_dim
         self.shape_action = self.cartpole.action_dim
         self.replay_mem = ReplayMemory(config.hp_student.agents.replay_buffer.buffer_size)
         self.agent = DDPGAgent(agent_cfg=config.hp_student.agents,
@@ -46,39 +46,48 @@ class Trainer:
         self.ha_teacher = HATeacher(teacher_cfg=config.ha_teacher, cartpole_cfg=config.cartpole)
 
         # Coordinator
-        self.coordinator = Coordinator(config=config.coordinator)
+        self.coordinator = Coordinator()
 
         # Logger and Plotter
         self.logger = Logger(config.logger)
+
+        # Variables for caching
+        self._initial_loss = self.agent_params.initial_loss
+        self._teacher_learn = self.ha_teacher.teacher_learn
+        self._action_magnitude = config.hp_student.agents.action.magnitude
+        self._max_steps_per_episode = self.agent_params.max_steps_per_episode
+        self._terminate_on_failure = self.params.cartpole.terminate_on_failure
+        self._exp_prefill_size = self.agent_params.replay_buffer.experience_prefill_size
+        self._batch_size = self.agent_params.replay_buffer.batch_size
 
         self.failed_times = 0
 
     def interaction_step(self, mode=None):
 
-        current_states = copy.deepcopy(self.cartpole.states)
-        observations, _ = states2observations(current_states)
-        s = np.asarray(current_states[:4])
+        current_state = copy.deepcopy(self.cartpole.state)
+        observations, _ = state2observations(current_state)
+        s = np.asarray(current_state[:4])
 
-        self.ha_teacher.update(states=s)  # Teacher update
-        self.coordinator.update(states=s)  # Coordinator update
+        self.ha_teacher.update(state=s)  # Teacher update
+        # self.coordinator.update(state=s)  # Coordinator update
 
-        terminal_action, action_mode, nominal_action = self.get_terminal_action(states=current_states,
-                                                                                mode=mode)
+        terminal_action, action_mode, nominal_action = self.get_final_action(state=current_state,
+                                                                             mode=mode)
         # Update logs
         self.logger.update_logs(
-            states=copy.deepcopy(self.cartpole.states[:4]),
+            state=copy.deepcopy(self.cartpole.state[:4]),
             action=self.coordinator.plant_action,
             action_mode=self.coordinator.action_mode,
-            safety_val=safety_value(states=np.array(self.cartpole.states[:4]),
+            safety_val=safety_value(state=np.array(self.cartpole.state[:4]),
                                     p_mat=MATRIX_P)
         )
 
         # Inject Terminal Action
-        next_states = self.cartpole.step(action=terminal_action)
+        next_state = self.cartpole.step(action=terminal_action)
 
-        observations_next, failed = states2observations(next_states)
+        observations_next, failed = state2observations(next_state)
 
-        reward, distance_score = self.cartpole.reward_fcn(current_states, nominal_action, next_states)
+        reward, distance_score = self.cartpole.reward_fcn(current_state, nominal_action, next_state)
 
         return observations, nominal_action, observations_next, failed, reward, distance_score
 
@@ -102,8 +111,8 @@ class Trainer:
             # Logging clear for each episode
             self.logger.clear_logs()
 
-            print(f"Training at {ep_i} init_cond: {self.cartpole.states[:4]}")
-            pbar = tqdm(total=self.agent_params.max_steps_per_episode, desc="Episode %d" % ep_i)
+            print(f"Training at {ep_i} init_cond: {self.cartpole.state[:4]}")
+            pbar = tqdm(total=self._max_steps_per_episode, desc="Episode %d" % ep_i)
 
             reward_list = []
             distance_score_list = []
@@ -111,7 +120,7 @@ class Trainer:
             failed = False
 
             ep_steps = 0
-            for step in range(self.agent_params.max_steps_per_episode):
+            for step in range(self._max_steps_per_episode):
 
                 observations, action, observations_next, failed, r, distance_score = \
                     self.interaction_step(mode='train')
@@ -120,19 +129,19 @@ class Trainer:
                 distance_score_list.append(distance_score)
                 self.replay_mem.add((observations, action, r, observations_next, failed))
 
-                if self.replay_mem.size > self.agent_params.replay_buffer.experience_prefill_size:
-                    minibatch = self.replay_mem.sample(self.agent_params.replay_buffer.batch_size)
+                if self.replay_mem.size > self._exp_prefill_size:
+                    minibatch = self.replay_mem.sample(self._batch_size)
                     critic_loss = self.agent.optimize(minibatch)
                     optimize_time += 1
                 else:
-                    critic_loss = self.agent_params.initial_loss
+                    critic_loss = self._initial_loss
 
                 critic_loss_list.append(critic_loss)
                 global_steps += 1
                 ep_steps += 1
                 pbar.update(1)
 
-                if failed and self.params.cartpole.terminate_on_failure:
+                if failed and self._terminate_on_failure:
                     # print(f"step is: {step}")
                     self.failed_times += 1 * failed
                     print(f"Cartpole system failed, terminate for safety concern!")
@@ -200,12 +209,12 @@ class Trainer:
         print("Total failed:", self.failed_times)
         exit("Reach maximum episodes, exit...")
 
-    def evaluation(self, reset_states=None, mode=None, idx=0):
+    def evaluation(self, reset_state=None, mode=None, idx=0):
 
         if self.params.cartpole.random_reset.eval:
             self.cartpole.random_reset(threshold=self.ha_teacher.epsilon, mode=mode)
         else:
-            self.cartpole.reset(reset_states)
+            self.cartpole.reset(reset_state)
 
         reward_list = []
         distance_score_list = []
@@ -305,16 +314,16 @@ class Trainer:
         return mean_reward, mean_distance_score, failed
 
     def test(self):
-        self.evaluation(mode='test', reset_states=self.params.cartpole.initial_condition)
+        self.evaluation(mode='test', reset_state=self.params.cartpole.initial_condition)
 
-    def get_terminal_action(self, states, mode=None):
+    def get_final_action(self, state, mode=None):
 
-        observations, _ = states2observations(states)
-        s = np.asarray(states[:4])
+        observations, _ = state2observations(state)
+        s = np.asarray(state[:4])
 
         # DRL Action
         drl_raw_action = self.agent.get_action(observations, mode)
-        drl_action = drl_raw_action * self.agent_params.action.magnitude
+        drl_action = drl_raw_action * self._action_magnitude
 
         # Model-based Action
         phy_action = F @ s
@@ -324,17 +333,18 @@ class Trainer:
         # hp_action = drl_action  + phy_action
 
         # Teacher Action
-        ha_action = self.ha_teacher.get_action()
+        ha_action, dwell_flag = self.ha_teacher.get_action()
 
         # Terminal Action by Coordinator
         logger.debug(f"ha_action: {ha_action}")
         logger.debug(f"hp_action: {hp_action}")
-        terminal_action, action_mode = self.coordinator.determine_action(hp_action=hp_action, ha_action=ha_action,
-                                                                         epsilon=self.ha_teacher.epsilon)
+        terminal_action, action_mode = self.coordinator.get_terminal_action(hp_action=hp_action, ha_action=ha_action,
+                                                                            plant_state=s, dwell_flag=dwell_flag,
+                                                                            epsilon=self.ha_teacher.epsilon)
         # Decide nominal action to store into replay buffer
         if action_mode == ActionMode.TEACHER:
-            if self.params.coordinator.teacher_learn:  # Learn from teacher action
-                nominal_action = (ha_action - phy_action) / self.agent_params.action.magnitude
+            if self._teacher_learn:  # Learn from teacher action
+                nominal_action = (ha_action - phy_action) / self._action_magnitude
             else:
                 nominal_action = drl_raw_action
         elif action_mode == ActionMode.STUDENT:

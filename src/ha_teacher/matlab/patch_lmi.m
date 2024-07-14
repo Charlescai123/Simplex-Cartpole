@@ -1,4 +1,4 @@
-function [F_hat, tmin] = patch_lmi(Ac, Bc, Ak, Bk)
+function [F_hat, tmin] = patch_lmi(As, Bs, Ak, Bk, eta, beta, kappa)
 %%%%%%%%%%%%%%%%%%%%%%  DOC HELP  %%%%%%%%%%%%%%%%%%%%%%
 %% Inputs
 %
@@ -12,11 +12,6 @@ function [F_hat, tmin] = patch_lmi(Ac, Bc, Ak, Bk)
 %    tmin :  Feasibility of LMI solution  -- 1x4
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% SP = [11.7610, 6.1422, 14.7641, 3.1142;
-%       6.1422, 3.8248, 9.3641, 1.9903;
-%       14.7641, 9.3641, 25.9514, 5.0703;
-%       3.1142, 1.9903, 5.0703, 1.0949];
-
 SP = [13.3425, 6.73778, 16.2166, 3.47318;
       6.73778, 3.94828, 9.69035, 2.09032;
       16.2166, 9.69035, 25.9442, 5.31439;
@@ -25,11 +20,11 @@ SP = [13.3425, 6.73778, 16.2166, 3.47318;
 beta1 = 0.0004;
 % beta1 = 0.0015;
 
-eta = 1.2;
+% eta = 1.2;
 % beta = 0.95;
-beta = 0.9;
+% beta = 0.9;
 % kappa = 0.012;
-kappa = 0.02;
+% kappa = 0.02;
 
 setlmis([]) 
 Q = lmivar(1,[4 1]); 
@@ -59,10 +54,9 @@ mylmi = getlmis;
 
 Q = dec2mat(mylmi, psol, Q);
 R = dec2mat(mylmi, psol, R);
-F_hat = R*inv(Q);
+F_hat = R*pinv(Q);
 
-M = Ac + Bc*F_hat;
-eig(M)
+M = As + Bs*F_hat;
 assert(all(eig(M)<0))
 
 end

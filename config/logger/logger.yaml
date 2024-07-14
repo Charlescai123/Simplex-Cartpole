@@ -10,10 +10,10 @@ logger:
 
   fig_plotter:
     phase:
-      plot: false
+      plot: true
       save_dir: "${logger.plot_dir}/phases/${logger.mode}/${general.id}"
     trajectory:
-      plot: false
+      plot: true
       save_dir: "${logger.plot_dir}/trajectories/${logger.mode}/${general.id}"
 
   live_plotter:

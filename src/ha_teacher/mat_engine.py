@@ -40,7 +40,10 @@ class MatEngine:
                      As: np.ndarray,
                      Bs: np.ndarray,
                      Ak: np.ndarray,
-                     Bk: np.ndarray):
+                     Bk: np.ndarray,
+                     eta: float,
+                     beta: float,
+                     kappa: float):
         As = As.reshape(4, 4)
         Bs = Bs.reshape(4, 1)
         Ak = Ak.reshape(4, 4)
@@ -51,8 +54,8 @@ class MatEngine:
         Ak = matlab.double(Ak.tolist())
         Bk = matlab.double(Bk.tolist())
 
-        F_hat, t_min = self.engine.patch_lmi(As, Bs, Ak, Bk, nargout=2, stdout=self.out, stderr=self.err)
-
+        F_hat, t_min = self.engine.patch_lmi(As, Bs, Ak, Bk, eta, beta, kappa,
+                                             nargout=2, stdout=self.out, stderr=self.err)
         return F_hat, t_min
 
     def feedback_control_cvxpy(self, Ac, Bc, Ak, Bk, sc, sd):
