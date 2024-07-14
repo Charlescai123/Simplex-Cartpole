@@ -119,8 +119,8 @@ You can observe the training status using tensorboard:
    tensorboard --logdir ./results/logs
    ```
 
-To test the trained Phy-DRL policy, assign the model path for `CHECKPOINT` in the `scripts/test/pretrain.sh` and run
-command:
+To test the trained Phy-DRL policy, assign the model path for `CHECKPOINT` in the `scripts/test/pretrain.sh`,
+set `WITH_FRICTION` and `ACTUATOR_NOISE` to `false`, run command:
 
    ```bash
    bash scripts/test/pretrain.sh
@@ -134,8 +134,8 @@ The cartpole system will safely converge to the set point using control action f
  <br><b>Fig 1. A Well-trained Agent Provides Safety and Stability</b>
 </p>
 
-We now create a more real environment by introducing frictions and actuator noises: in `scripts/test/pretrain.sh`,
-set `WITH_FRICTION` and `ACTUATOR_NOISE` to be `true`, run the script again. You will find that, due to the
+We now create a more real environment by introducing frictions and actuator noises: In `scripts/test/pretrain.sh`,
+set `WITH_FRICTION` and `ACTUATOR_NOISE` to `true`, run the script again. You will find that, due to the
 'sim-to-real' gap, the system will fail within the same initial condition:
 
 <p align="center">

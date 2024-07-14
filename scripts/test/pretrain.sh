@@ -6,7 +6,7 @@ MODE='test'
 CHECKPOINT="results/models/Pretrain"    # Also try the best trained model (results/models/xxx-best)
 TEACHER_ENABLE=false
 TEACHER_LEARN=false
-WITH_FRICTION=true
+WITH_FRICTION=false
 FRICTION_CART=20
 
 PLOT_PHASE=true
