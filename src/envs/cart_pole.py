@@ -31,41 +31,54 @@ class Cartpole(gym.Env):
 
     def __init__(self, config: DictConfig):
         self.params = config
-        self.total_mass = config.mass_cart + config.mass_pole
+        self.safety_set = dict(config.safety_set)
+
+        # Random variable settings
+        self._reset_rand = self.seed(seed=config.random_reset.seed)
+        self._noise_rand = self.seed(seed=config.random_noise.seed)
+        self._noise_apply = config.random_noise.actuator.apply
+        self._noise_mean = config.random_noise.actuator.mean
+        self._noise_stddev = config.random_noise.actuator.stddev
+
+        # Cart-Pole settings
+        self.gravity = config.gravity
+        self.tau = 1 / config.frequency
+        self.mass_cart = config.mass_cart
+        self.mass_pole = config.mass_pole
+        self.with_friction = config.with_friction
+        self.total_mass = self.mass_cart + self.mass_pole
         self.half_length = config.length_pole * 0.5
         self.pole_mass_length_half = config.mass_pole * self.half_length
-        self.tau = 1 / config.frequency
+        self.friction_cart = config.friction_cart
+        self.friction_pole = config.friction_pole
+        self._f_min, self._f_max = config.force_bound
 
-        self.seed()
-        self.viewer = None
+        # Runtime status
         self.state = None
-        self.steps_beyond_terminal = None
-
+        self.viewer = None
         self.state_dim = 4  # x, x_dot, theta, theta_dot
         self.state_observations_dim = 5  # x, x_dot, s_theta, c_theta, theta_dot
         self.action_dim = 1  # force input or voltage
         self.reward_list = []
         self.ut = 0
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
+    @staticmethod
+    def seed(seed=None):
+        np_random, seed = seeding.np_random(seed)
+        return np_random
 
     def step(self, action: float, action_mode=None):
         """
-        param: action: the actual action injected to the plant
+        action: the action injected to the plant
         return: a list of state
         """
         x, x_dot, theta, theta_dot, _ = self.state
-
-        f_min, f_max = self.params.force_bound
-        force = np.clip(action, a_min=f_min, a_max=f_max)
+        force = np.clip(action, a_min=self._f_min, a_max=self._f_max)
 
         # Actual force applied to plant after random noise
-        if self.params.random_noise.actuator.apply:
-            mean = self.params.random_noise.actuator.mean
-            stddev = self.params.random_noise.actuator.stddev
-            force += np.random.normal(loc=mean, scale=stddev)
-
+        if self._noise_apply:
+            force += self._noise_rand.normal(loc=self._noise_mean,
+                                             scale=self._noise_stddev)
         self.ut = force
         logger.debug(f"applied force is: {force}")
 
@@ -73,23 +86,23 @@ class Cartpole(gym.Env):
         sin_th = math.sin(theta)
 
         # kinematics of the inverted pendulum
-        if self.params.with_friction:
+        if self.with_friction:
             """ with friction"""
             temp \
                 = (force + self.pole_mass_length_half * theta_dot ** 2 *
-                   sin_th - self.params.friction_cart * x_dot) / self.total_mass
+                   sin_th - self.friction_cart * x_dot) / self.total_mass
 
             th_acc = \
-                (self.params.gravity * sin_th - cos_th * temp -
-                 self.params.friction_pole * theta_dot / self.pole_mass_length_half) / \
-                (self.half_length * (4.0 / 3.0 - self.params.mass_pole * cos_th ** 2 / self.total_mass))
+                (self.gravity * sin_th - cos_th * temp -
+                 self.friction_pole * theta_dot / self.pole_mass_length_half) / \
+                (self.half_length * (4.0 / 3.0 - self.mass_pole * cos_th ** 2 / self.total_mass))
             x_acc = temp - self.pole_mass_length_half * th_acc * cos_th / self.total_mass
 
         else:
             """without friction"""
             temp = (force + self.pole_mass_length_half * theta_dot ** 2 * sin_th) / self.total_mass
-            th_acc = (self.params.gravity * sin_th - cos_th * temp) / \
-                     (self.half_length * (4.0 / 3.0 - self.params.mass_pole * cos_th ** 2 / self.total_mass))
+            th_acc = (self.gravity * sin_th - cos_th * temp) / \
+                     (self.half_length * (4.0 / 3.0 - self.mass_pole * cos_th ** 2 / self.total_mass))
             x_acc = temp - self.pole_mass_length_half * th_acc * cos_th / self.total_mass
 
         if self.params.kinematics_integrator == 'euler':
@@ -121,38 +134,30 @@ class Cartpole(gym.Env):
 
     def random_reset(self, threshold, mode='train'):
         print("<====== Env Reset: Random ======>")
-        # threshold = self.params.epsilon2hpc
+        x_l, x_h = self.safety_set['x']
+        dx_l, dx_h = self.safety_set['x_dot']
+        th_l, th_h = self.safety_set['theta']
+        dth_l, dth_h = self.safety_set['theta_dot']
 
         flag = True
         while flag:
-            ran_x = np.random.uniform(-0.9, 0.9)
-            ran_v = np.random.uniform(-3.0, 3.0)
-            # ran_v = np.random.uniform(-2.0, 2.0)
-            ran_theta = np.random.uniform(-0.8, 0.8)
-            ran_theta_v = np.random.uniform(-4.5, 4.5)
-            # ran_theta_v = np.random.uniform(-2.5, 2.5)
-            # ran_theta_v = np.random.uniform(-3, 3)
-
-            # state_vec = np.array([ran_x, ran_theta])
+            rand_x = self._reset_rand.uniform(x_l, x_h)
+            rand_dx = self._reset_rand.uniform(dx_l, dx_h)
+            rand_th = self._reset_rand.uniform(th_l, th_h)
+            rand_dth = self._reset_rand.uniform(dth_l, dth_h)
 
             safety_val = safety_value(
-                state=np.array([ran_x, ran_v, ran_theta, ran_theta_v]), p_mat=MATRIX_P
+                state=np.array([rand_x, rand_dx, rand_th, rand_dth]), p_mat=MATRIX_P
             )
-
-            # safety_val = self.safety_value(state=state_vec, p_mat=self.pP)
             if safety_val < threshold:
                 flag = False
 
-            # if mode is not 'train' and safety_val <= self.params.eval_epsilon:
-            #     flag = True
-
-        failed = False
-        self.state = [ran_x, ran_v, ran_theta, ran_theta_v, failed]
+        self.state = [rand_x, rand_dx, rand_th, rand_dth, False]
 
     def render(self, mode='human', state=None, idx=0):
         screen_width = 600
         screen_height = 400
-        world_width = self.params.safety_set.x[1] * 2 + 1
+        world_width = self.safety_set['x'][1] * 2 + 1
         scale = screen_width / world_width
         cart_y = 120  # TOP OF CART
         pole_width = 10.0
@@ -263,13 +268,13 @@ class Cartpole(gym.Env):
             self.viewer = None
 
     def is_trans_failed(self, x):
-        trans_failed = bool(x <= self.params.safety_set.x[0]
-                            or x >= self.params.safety_set.x[1])
+        trans_failed = bool(x <= self.safety_set['x'][0]
+                            or x >= self.safety_set['x'][1])
         return trans_failed
 
     def is_theta_failed(self, theta):
-        theta_failed = bool(theta <= self.params.safety_set.theta[0]
-                            or theta >= self.params.safety_set.theta[1])
+        theta_failed = bool(theta <= self.safety_set['theta'][0]
+                            or theta >= self.safety_set['theta'][1])
         return theta_failed
 
     def is_failed(self, x, theta):

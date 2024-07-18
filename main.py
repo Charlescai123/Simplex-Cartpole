@@ -2,6 +2,7 @@ import os
 import hydra
 import logging
 import datetime
+import numpy as np
 import tensorflow as tf
 from omegaconf import DictConfig
 

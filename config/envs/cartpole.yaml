@@ -38,22 +38,31 @@ cartpole:
     0.0
   ]
   random_reset:
+    seed: 0   # Random seed
     train: true
     eval: true
 
   # Add random noise to actuator/friction
   random_noise:
+    seed: 0   # Random seed
+
+    # Actuator noise
     actuator:
       apply: false
       type: "gaussian"
       mean: 0
       stddev: 2
+
+    # Friction noise
     friction:
+      # cart friction
       cart:
         apply: false
         type: "gaussian"
         mean: 0
         stddev: 2
+
+      # pole friction
       pole:
         apply: false
         type: "gaussian"
