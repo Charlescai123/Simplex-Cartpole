@@ -221,9 +221,8 @@ teacher module during testing, and the result shows that the agent has learned t
 
 - To plot cartpole `phase/trajectory` or live show its `animation/trajectory`, check corresponding fields
   in `config/logger/logger.yaml`
-- Choose between training by `steps` or `episodes`, set field `training_by_steps` to `true` or `false`
+- Choose between training by `steps` or `episodes`, set field `training_by_steps` to *true* or *false*
   in `config/base_config.yaml`
 - The repository uses the `logging` package for debugging. Set debug mode in `config/base_config.yaml`
 - In case you get issues during live plot, check the suitable
-  backend [libraries](https://matplotlib.org/stable/users/explain/figure/backends.html) to use for matplotlib and set
-  with `matplotlib.use(xxx)`
+  backend [libraries](https://matplotlib.org/stable/users/explain/figure/backends.html) to use for matplotlib and set it by *matplotlib.use(xxx)* in `src/logger/live_plotter.py`
