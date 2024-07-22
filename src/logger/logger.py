@@ -38,7 +38,7 @@ class Logger:
         self.state_list = []
         self.action_list = []
         self.action_mode_list = []
-        self.safety_val_list = []
+        self.energy_list = []
 
     def create_thread(self):
         self.p = threading.Thread(target=self.animation_run)
@@ -60,7 +60,7 @@ class Logger:
             state_list=self.state_list,
             action_list=self.action_list,
             action_mode_list=self.action_mode_list,
-            safety_val_list=self.safety_val_list,
+            energy_list=self.energy_list,
             x_set=x_set,
             theta_set=theta_set,
             action_set=action_set,
@@ -72,13 +72,13 @@ class Logger:
         self.state_list.clear()
         self.action_list.clear()
         self.action_mode_list.clear()
-        self.safety_val_list.clear()
+        self.energy_list.clear()
 
-    def update_logs(self, state, action, action_mode, safety_val):
+    def update_logs(self, state, action, action_mode, energy):
         self.state_list.append(state)
         self.action_list.append(action)
         self.action_mode_list.append(action_mode)
-        self.safety_val_list.append(safety_val)
+        self.energy_list.append(energy)
 
     def check_dir(self):
         print(f"checking logger directories...")

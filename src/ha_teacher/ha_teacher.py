@@ -10,7 +10,7 @@ from src.physical_design import MATRIX_P, F
 from src.ha_teacher.mat_engine import MatEngine
 from src.hp_student.agents.ddpg import DDPGAgent
 from src.logger.logger import Logger, plot_trajectory
-from src.utils.utils import safety_value, get_discrete_Ad_Bd, logger
+from src.utils.utils import energy_value, get_discrete_Ad_Bd, logger
 
 np.set_printoptions(suppress=True)
 
@@ -52,10 +52,10 @@ class HATeacher:
         """
 
         self._plant_state = state
-        safety_val = safety_value(state=state, p_mat=MATRIX_P)
+        energy = energy_value(state=state, p_mat=MATRIX_P)
 
         # Restore patch flag
-        if safety_val < self.epsilon:
+        if energy < self.epsilon:
             self._center_update = True
 
         # state unsafe (outside safety envelope)
@@ -88,7 +88,6 @@ class HATeacher:
 
         if t_min > 0:
             print(f"LMI has no solution, use last updated patch")
-            # self._patch_gain = np.asarray(F_hat).squeeze()
         else:
             self._patch_gain = np.asarray(F_hat).squeeze()
 
@@ -111,8 +110,8 @@ class HATeacher:
         logger.debug(f"self._patch_center: {self._patch_center}")
         logger.debug(f"Generated teacher action: {teacher_action}")
 
-        safety_val = safety_value(state=self._plant_state, p_mat=MATRIX_P)
-        if safety_val < self.epsilon and self._dwell_step < self.max_dwell_steps:
+        energy = energy_value(state=self._plant_state, p_mat=MATRIX_P)
+        if energy < self.epsilon and self._dwell_step < self.max_dwell_steps:
             self._dwell_step += 1
             logger.debug(f"HA-Teacher runs for dwell time: {self._dwell_step}/{self.max_dwell_steps}")
             return teacher_action, True

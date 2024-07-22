@@ -2,6 +2,7 @@ import os
 import time
 import copy
 import imageio
+import warnings
 import numpy as np
 from tqdm import tqdm
 from numpy.linalg import inv
@@ -13,7 +14,7 @@ from src.ha_teacher.ha_teacher import HATeacher
 from src.hp_student.agents.ddpg import DDPGAgent
 from src.hp_student.agents.replay_mem import ReplayMemory
 from src.coordinator.coordinator import Coordinator
-from src.utils.utils import ActionMode, safety_value, logger
+from src.utils.utils import ActionMode, energy_value, logger
 from src.envs.cart_pole import observations2state, state2observations
 from src.envs.cart_pole import Cartpole, get_init_condition
 from src.logger.logger import Logger, plot_trajectory
@@ -66,20 +67,18 @@ class Trainer:
 
         current_state = copy.deepcopy(self.cartpole.state)
         observations, _ = state2observations(current_state)
-        s = np.asarray(current_state[:4])
 
-        self.ha_teacher.update(state=s)  # Teacher update
-        # self.coordinator.update(state=s)  # Coordinator update
+        self.ha_teacher.update(state=np.asarray(current_state[:4]))  # Teacher update
 
-        terminal_action, action_mode, nominal_action = self.get_final_action(state=current_state,
-                                                                             mode=mode)
+        terminal_action, nominal_action = self.get_final_action(state=current_state,
+                                                                mode=mode)
         # Update logs
         self.logger.update_logs(
             state=copy.deepcopy(self.cartpole.state[:4]),
             action=self.coordinator.plant_action,
             action_mode=self.coordinator.action_mode,
-            safety_val=safety_value(state=np.array(self.cartpole.state[:4]),
-                                    p_mat=MATRIX_P)
+            energy=energy_value(state=np.array(self.cartpole.state[:4]),
+                                p_mat=MATRIX_P)
         )
 
         # Inject Terminal Action
@@ -97,7 +96,6 @@ class Trainer:
         best_dsas = 0.0  # Best distance score and survived
         moving_average_dsas = 0.0
         optimize_time = 0
-        # initial_condition = get_init_condition(n_points_per_dim=self.params.cartpole.n_points_per_dim)
 
         # Run for max training episodes
         for ep_i in range(int(self.agent_params.max_training_episodes)):
@@ -251,7 +249,7 @@ class Trainer:
                     state=self.logger.state_list[-1],
                     action=self.logger.action_list[-1],
                     action_mode=self.logger.action_mode_list[-1],
-                    safety_val=self.logger.safety_val_list[-1],
+                    energy=self.logger.energy_list[-1],
                 )
                 plt.pause(0.01)
             reward_list.append(r)
@@ -265,24 +263,30 @@ class Trainer:
 
         # Save as a GIF (Cart-pole animation)
         if self.params.logger.live_plotter.animation.save_to_gif:
-            logger.debug(f"Animation frames: {ani_frames}")
-            last_frame = ani_frames[-1]
-            for _ in range(5):
-                ani_frames.append(last_frame)
-            gif_path = self.params.logger.live_plotter.animation.gif_path
-            fps = self.params.logger.live_plotter.animation.fps
-            print(f"Saving animation frames to {gif_path}")
-            imageio.mimsave(gif_path, ani_frames, fps=fps, loop=0)
+            if len(ani_frames) == 0:
+                warnings.warn("Failed to save animation as gif, please set animation.show to True")
+            else:
+                logger.debug(f"Animation frames: {ani_frames}")
+                last_frame = ani_frames[-1]
+                for _ in range(5):
+                    ani_frames.append(last_frame)
+                gif_path = self.params.logger.live_plotter.animation.gif_path
+                fps = self.params.logger.live_plotter.animation.fps
+                print(f"Saving animation frames to {gif_path}")
+                imageio.mimsave(gif_path, ani_frames, fps=fps, loop=0)
 
         # Save as a GIF (Cart-pole trajectory)
         if self.params.logger.live_plotter.live_trajectory.save_to_gif:
-            last_frame = self.logger.live_plotter.frames[-1]
-            for _ in range(5):
-                self.logger.live_plotter.frames.append(last_frame)
-            gif_path = self.params.logger.live_plotter.live_trajectory.gif_path
-            fps = self.params.logger.live_plotter.live_trajectory.fps
-            print(f"Saving live trajectory frames to {gif_path}")
-            imageio.mimsave(gif_path, self.logger.live_plotter.frames, fps=fps, loop=0)
+            if len(ani_frames) == 0:
+                warnings.warn("Failed to save live trajectory as gif, please set live_trajectory.show to True")
+            else:
+                last_frame = self.logger.live_plotter.frames[-1]
+                for _ in range(5):
+                    self.logger.live_plotter.frames.append(last_frame)
+                gif_path = self.params.logger.live_plotter.live_trajectory.gif_path
+                fps = self.params.logger.live_plotter.live_trajectory.fps
+                print(f"Saving live trajectory frames to {gif_path}")
+                imageio.mimsave(gif_path, self.logger.live_plotter.frames, fps=fps, loop=0)
 
         # Close and reset
         if visual_flag:
@@ -311,6 +315,9 @@ class Trainer:
                 idx=idx
             )
 
+        # Reset live plotter
+        self.logger.live_plotter.reset()
+
         return mean_reward, mean_distance_score, failed
 
     def test(self):
@@ -330,7 +337,6 @@ class Trainer:
 
         # Student Action (Residual form)
         hp_action = drl_action * self.gamma + phy_action * (1 - self.gamma)
-        # hp_action = drl_action  + phy_action
 
         # Teacher Action
         ha_action, dwell_flag = self.ha_teacher.get_action()
@@ -352,4 +358,4 @@ class Trainer:
         else:
             raise NotImplementedError(f"Unknown action mode: {action_mode}")
 
-        return terminal_action, action_mode, nominal_action
+        return terminal_action, nominal_action

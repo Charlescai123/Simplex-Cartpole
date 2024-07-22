@@ -136,7 +136,7 @@ The cartpole system will safely converge to the set point using control action f
 
 We now create a more real environment by introducing frictions and actuator noises: In `scripts/test/pretrain.sh`,
 set `WITH_FRICTION` and `ACTUATOR_NOISE` to `true`, run the script again. You will find that, due to the
-'sim-to-real' gap, the system will fail within the same initial condition:
+'sim-to-real' gap, the system will fail at the same initial condition:
 
 <p align="center">
  <img src="./docs/GIFs/ani_pretrain_gap.gif" height="260" alt="ani_pretrain_gap"/> 

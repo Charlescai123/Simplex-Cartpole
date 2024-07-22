@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from gym.envs.classic_control import rendering
 
 from src.physical_design import MATRIX_P, MATRIX_S
-from src.utils.utils import safety_value, logger
+from src.utils.utils import energy_value, logger
 
 
 class DrawText:
@@ -39,6 +39,7 @@ class Cartpole(gym.Env):
         self._noise_apply = config.random_noise.actuator.apply
         self._noise_mean = config.random_noise.actuator.mean
         self._noise_stddev = config.random_noise.actuator.stddev
+        self._high_performance_reward_factor = config.reward.high_performance_reward_factor
 
         # Cart-Pole settings
         self.gravity = config.gravity
@@ -146,10 +147,10 @@ class Cartpole(gym.Env):
             rand_th = self._reset_rand.uniform(th_l, th_h)
             rand_dth = self._reset_rand.uniform(dth_l, dth_h)
 
-            safety_val = safety_value(
+            energy = energy_value(
                 state=np.array([rand_x, rand_dx, rand_th, rand_dth]), p_mat=MATRIX_P
             )
-            if safety_val < threshold:
+            if energy < threshold:
                 flag = False
 
         self.state = [rand_x, rand_dx, rand_th, rand_dth, False]
@@ -321,7 +322,7 @@ class Cartpole(gym.Env):
         set_point = self.params.set_point
 
         distance_score = self.get_distance_score(observations=observations, set_point=set_point)
-        distance_reward = distance_score * self.params.reward.high_performance_reward_factor
+        distance_reward = distance_score * self._high_performance_reward_factor
 
         lyapunov_reward_current = self.get_lyapunov_reward(MATRIX_P, curr_state)
 

@@ -10,7 +10,7 @@ from numpy import linalg as LA
 
 from src.hp_student.agents.ddpg import DDPGAgent
 from src.logger.logger import Logger, plot_trajectory
-from src.utils.utils import ActionMode, safety_value, logger
+from src.utils.utils import ActionMode, energy_value, logger
 from src.physical_design import MATRIX_P
 
 np.set_printoptions(suppress=True)
@@ -35,11 +35,11 @@ class Coordinator:
             self._plant_action = hp_action
             return hp_action, ActionMode.STUDENT
 
-        safety_val = safety_value(plant_state, MATRIX_P)
+        energy = energy_value(plant_state, MATRIX_P)
 
         # Inside safety envelope (bounded by epsilon)
-        if safety_val < epsilon:
-            logger.debug(f"current safety status: {safety_val} < {epsilon}, system is safe")
+        if energy < epsilon:
+            logger.debug(f"current system energy status: {energy} < {epsilon}, system is safe")
 
             # Teacher already activated
             if self._last_action_mode == ActionMode.TEACHER:
@@ -68,7 +68,7 @@ class Coordinator:
 
         # Outside safety envelope (bounded by epsilon)
         else:
-            logger.debug(f"current safety status: {safety_val} >= {epsilon}, system is unsafe")
+            logger.debug(f"current system energy status: {energy} >= {epsilon}, system is unsafe")
             logger.debug(f"Use HA-Teacher action for safety concern")
             self._action_mode = ActionMode.TEACHER
             self._plant_action = ha_action

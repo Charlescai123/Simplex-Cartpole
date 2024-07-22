@@ -56,9 +56,9 @@ class TruncatePathFormatter(logging.Formatter):
             return super().format(record)
 
 
-def safety_value(state: np.ndarray, p_mat: np.ndarray) -> int:
+def energy_value(state: np.ndarray, p_mat: np.ndarray) -> int:
     """
-    Get safety value represented by s^T @ P @ s
+    Get system energy value represented by s^T @ P @ s
     """
     return state.transpose() @ p_mat @ state
 
@@ -85,6 +85,7 @@ def is_dir_empty(path):
     # List the contents of the directory
     contents = os.listdir(path)
     return len(contents) == 0
+
 
 def logging_mode(mode: str):
     if mode == 'DEBUG':

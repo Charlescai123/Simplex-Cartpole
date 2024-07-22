@@ -33,7 +33,7 @@ class FigPlotter:
         self.last_live_state = None
         self.last_live_action = 0
         self.last_live_action_mode = None
-        self.last_live_safety_val = 0
+        self.last_live_energy = 0
 
         self.line_collections = []
 
@@ -41,7 +41,7 @@ class FigPlotter:
         self.last_live_state = []
         self.last_live_action = 0
         self.last_live_action_mode = None
-        self.last_live_safety_val = 0
+        self.last_live_energy = 0
 
     def check_all_dir(self, phase_plot, trajectory_plot):
         if phase_plot:
@@ -120,7 +120,7 @@ class FigPlotter:
         h5, = plt.plot(phases[0][0], phases[0][1], 'ko', markersize=6, mew=1.2)  # initial state
         h6, = plt.plot(phases[-1][0], phases[-1][1], 'kx', markersize=8, mew=1.2)  # end state
 
-    def plot_trajectory(self, state_list, action_list, action_mode_list, safety_val_list, x_set, theta_set, action_set,
+    def plot_trajectory(self, state_list, action_list, action_mode_list, energy_list, x_set, theta_set, action_set,
                         freq, fig_idx):
         # Figure name
         fig_name = f'{self.trajectory_dir}/trajectory{fig_idx}.png'
@@ -136,7 +136,7 @@ class FigPlotter:
         n1 = len(state_list)
         n2 = len(action_list)
         n3 = len(action_mode_list)
-        n4 = len(safety_val_list)
+        n4 = len(energy_list)
         assert n1 == n2
         assert n2 == n3
         assert n3 == n4
@@ -151,8 +151,8 @@ class FigPlotter:
                               state2=trajectories[i + 1],
                               action1=action_list[i],
                               action2=action_list[i + 1],
-                              safety_val1=safety_val_list[i],
-                              safety_val2=safety_val_list[i + 1],
+                              energy1=energy_list[i],
+                              energy2=energy_list[i + 1],
                               action_mode=action_mode_list[i],
                               i=i)
 
@@ -201,15 +201,15 @@ class FigPlotter:
         axes[2, 0].add_line(mlines.Line2D([], [], color='red', linestyle='-', label='HAC'))
         legend_without_duplicate_labels(axes[2, 0])
 
-        # Add label and title (safety values)
+        # Add label and title (system energy)
         # axes[2, 1].set_yticks(np.linspace(0, 3, 5))
-        axes[2, 1].set_ylabel("safety value")
+        axes[2, 1].set_ylabel("system energy")
         axes[2, 1].add_line(mlines.Line2D([], [], color=[0, 0.4470, 0.7410], linestyle='-', label='HPC'))
         axes[2, 1].add_line(mlines.Line2D([], [], color='red', linestyle='-', label='HAC'))
         legend_without_duplicate_labels(axes[2, 1])
 
     @staticmethod
-    def line_segment(axes, state1, state2, action1, action2, action_mode, safety_val1, safety_val2, i):
+    def line_segment(axes, state1, state2, action1, action2, action_mode, energy1, energy2, i):
         if action_mode == ActionMode.STUDENT:
             # x
             axes[0, 0].plot([i, i + 1], [state1[0], state2[0]], '-', label='HPC', color=[0, 0.4470, 0.7410])
@@ -226,8 +226,8 @@ class FigPlotter:
             # force/action
             axes[2, 0].plot([i, i + 1], [action1, action2], '-', label='HPC', color=[0, 0.4470, 0.7410])
 
-            # safety values
-            axes[2, 1].plot([i, i + 1], [safety_val1, safety_val2], '-', label='HPC', color=[0, 0.4470, 0.7410])
+            # system energy
+            axes[2, 1].plot([i, i + 1], [energy1, energy2], '-', label='HPC', color=[0, 0.4470, 0.7410])
 
         elif action_mode == ActionMode.TEACHER:
             # x
@@ -245,8 +245,8 @@ class FigPlotter:
             # force/action
             axes[2, 0].plot([i, i + 1], [action1, action2], 'r-', label='HAC')
 
-            # safety values
-            axes[2, 1].plot([i, i + 1], [safety_val1, safety_val2], 'r-', label='HAC')
+            # system energy
+            axes[2, 1].plot([i, i + 1], [energy1, energy2], 'r-', label='HAC')
 
         else:
             raise RuntimeError(f"Unrecognized action mode: {action_mode_list[i]}")

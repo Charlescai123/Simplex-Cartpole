@@ -32,7 +32,7 @@ class LivePlotter:
         self.states = deque(maxlen=self.window_size)
         self.actions = deque(maxlen=self.window_size)
         self.action_modes = deque(maxlen=self.window_size)
-        self.safety_vals = deque(maxlen=self.window_size)
+        self.energies = deque(maxlen=self.window_size)
 
     def reset(self):
         self.animation = None
@@ -45,11 +45,16 @@ class LivePlotter:
         self.frames = []
         self.line_collections = []
 
-    def update(self, state, action, action_mode, safety_val):
+        self.states = deque(maxlen=self.window_size)
+        self.actions = deque(maxlen=self.window_size)
+        self.action_modes = deque(maxlen=self.window_size)
+        self.energies = deque(maxlen=self.window_size)
+
+    def update(self, state, action, action_mode, energy):
         self.states.append(state)
         self.actions.append(action)
         self.action_modes.append(action_mode)
-        self.safety_vals.append(safety_val)
+        self.energies.append(energy)
         self.live_plot_counter += 1
 
     def animation_init(self):
@@ -96,21 +101,21 @@ class LivePlotter:
 
             s1, s2 = self.states[i], self.states[i + 1]
             a1, a2 = self.actions[i], self.actions[i + 1]
-            sv1, sv2 = self.safety_vals[i], self.safety_vals[i + 1]
+            e1, e2 = self.energies[i], self.energies[i + 1]
 
             segment_state1 = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([s1[0], s2[0]])])
             segment_state2 = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([s1[1], s2[1]])])
             segment_state3 = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([s1[2], s2[2]])])
             segment_state4 = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([s1[3], s2[3]])])
             segment_action = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([a1, a2])])
-            segment_safety = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([sv1, sv2])])
+            segment_energy = np.column_stack([np.array([i + window_idx, i + window_idx + 1]), np.array([e1, e2])])
 
             segment_list[0].append(segment_state1)
             segment_list[1].append(segment_state2)
             segment_list[2].append(segment_state3)
             segment_list[3].append(segment_state4)
             segment_list[4].append(segment_action)
-            segment_list[5].append(segment_safety)
+            segment_list[5].append(segment_energy)
 
         for i in range(6):
             self.line_collections[i].set_segments(segment_list[i])
@@ -120,11 +125,11 @@ class LivePlotter:
         states = np.asarray(self.states)
         dx_min, dx_max = min(states[:, 1]) - 1, max(states[:, 1]) + 1
         dth_min, dth_max = min(states[:, 3]) - 1, max(states[:, 3]) + 1
-        sv_min, sv_max = min(self.safety_vals) - 1, max(self.safety_vals) + 1
+        e_min, e_max = min(self.energies) - 1, max(self.energies) + 1
 
         self.live_axes[1].set_ylim(dx_min, dx_max)
         self.live_axes[3].set_ylim(dth_min, dth_max)
-        self.live_axes[5].set_ylim(sv_min, sv_max)
+        self.live_axes[5].set_ylim(e_min, e_max)
         plt.draw()
 
         # Append frames
@@ -135,7 +140,7 @@ class LivePlotter:
 
         return self.line_collections[:]
 
-    def animation_run(self, x_set, theta_set, action_set, state, action, action_mode, safety_val):
+    def animation_run(self, x_set, theta_set, action_set, state, action, action_mode, energy):
         if self.live_plot_flag is False:
             self.live_plot_flag = True
             plt.clf()
@@ -174,7 +179,7 @@ class LivePlotter:
             )
             plt.show(block=False)
 
-        self.update(state=state, action=action, action_mode=action_mode, safety_val=safety_val)
+        self.update(state=state, action=action, action_mode=action_mode, energy=energy)
 
     @staticmethod
     def line_segment(axes, action_mode, i):
@@ -204,7 +209,7 @@ class LivePlotter:
             line, = axes[2, 0].plot([i, i + 1], [y1, y2], '-', label='HPC', color=[0, 0.4470, 0.7410])
             lines.append(line)
 
-            # safety values
+            # system energy
             line, = axes[2, 1].plot([i, i + 1], [y1, y2], '-', label='HPC', color=[0, 0.4470, 0.7410])
             lines.append(line)
 
@@ -231,7 +236,7 @@ class LivePlotter:
             line, = axes[2, 0].plot([i, i + 1], [y1, y2], 'r-', label='HAC')
             lines.append(line)
 
-            # safety values
+            # system energy
             line, = axes[2, 1].plot([i, i + 1], [y1, y2], 'r-', label='HAC')
             lines.append(line)
 
