@@ -8,8 +8,21 @@
 
 ---
 
-This repo implements the cartpole framework in simulation to validate the feasibility of Simplex-enabled Continual (
-SeC) - Learning Machine for safety critical systems.
+This repository implements the cart-pole framework in simulation to validate the feasibility of the **Simplex-enabled
+Safe Continual Learning Machine (SeCLM)** for safety-critical systems. If you find this work helpful, please refer to and cite
+the literature listed below.
+
+```
+@misc{cai2024simplexenabledsafecontinuallearning,
+      title={Simplex-enabled Safe Continual Learning Machine}, 
+      author={Yihao Cai and Hongpeng Cao and Yanbing Mao and Lui Sha and Marco Caccamo},
+      year={2024},
+      eprint={2409.05898},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2409.05898}, 
+}
+```
 
 ## Table of Content
 
@@ -225,4 +238,5 @@ teacher module during testing, and the result shows that the agent has learned t
   in `config/base_config.yaml`
 - The repository uses the `logging` package for debugging. Set debug mode in `config/base_config.yaml`
 - In case you get issues during live plot, check the suitable
-  backend [libraries](https://matplotlib.org/stable/users/explain/figure/backends.html) to use for matplotlib and set it by *matplotlib.use(xxx)* in `src/logger/live_plotter.py`
+  backend [libraries](https://matplotlib.org/stable/users/explain/figure/backends.html) to use for matplotlib and set it
+  by *matplotlib.use(xxx)* in `src/logger/live_plotter.py`
